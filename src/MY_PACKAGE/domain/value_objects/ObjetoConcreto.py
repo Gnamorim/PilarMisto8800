@@ -1,4 +1,7 @@
 from enum import Enum
+from abc import ABC, abstractmethod
+
+
 
 class TipoAgregado(Enum):
     BASALTO = 1.2
@@ -8,9 +11,8 @@ class TipoAgregado(Enum):
     CALCARIO = 0.9
     ARENITO = 0.7
 
+class ObjetoConcreto(ABC):
 
-class ConcretoNormal():
-    
     fck: float
     modulo_elasticidade: float
     tipo_agregado: TipoAgregado
@@ -23,11 +25,7 @@ class ConcretoNormal():
         self.tipo_agregado = tipo_agregado
         self.gamma = gamma
         self._validate()
-        self._limite_escopo()
         self.fcd = self._calcular_fcd()
-        self.modulo_elasticidade_inicial = self._calcular_modulo_elasticidade_inicial()
-        self.modulo_elasticidade_secante = self._calcular_modulo_elasticidade_secante()
-
 
     def _validate(self):
         if not hasattr(self, "fck"):
@@ -47,13 +45,37 @@ class ConcretoNormal():
             raise AttributeError("Attribute 'gamma' is missing.")
         if not isinstance(self.gamma,float) or isinstance(self.gamma, bool):
             raise TypeError('Gamma must be a float')
-        
+
+    @abstractmethod    
     def _limite_escopo(self):
         pass
 
     def _calcular_fcd(self):
         return self.fck / self.gamma
+
+class ConcretoNormal(ObjetoConcreto):
     
+    fck: float
+    modulo_elasticidade: float
+    tipo_agregado: TipoAgregado
+    gamma: float
+    
+
+    def __init__(self, fck:float, modulo_elasticidade:float=0.0, tipo_agregado: TipoAgregado = TipoAgregado.BASALTO, gamma: float = 1.4):
+        self.fck = fck
+        self._modulo_elasticidade = modulo_elasticidade
+        self.tipo_agregado = tipo_agregado
+        self.gamma = gamma
+        self._validate()
+        self._limite_escopo()
+        self.fcd = self._calcular_fcd()
+        self.modulo_elasticidade_inicial = self._calcular_modulo_elasticidade_inicial()
+        self.modulo_elasticidade_secante = self._calcular_modulo_elasticidade_secante()
+
+        
+    def _limite_escopo(self):
+        pass
+  
     def _calcular_modulo_elasticidade_inicial(self):
         if self._modulo_elasticidade == 0.0:
             Ec = self.tipo_agregado.value * 5600 * (self.fck) ** 0.5
