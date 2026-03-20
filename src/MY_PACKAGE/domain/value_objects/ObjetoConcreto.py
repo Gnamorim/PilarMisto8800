@@ -125,8 +125,13 @@ class ConcretoNormal(ObjetoConcreto):
         
     def _calcular_modulo_elasticidade_secante(self):
         """Calcula o Ecs"""
-        alfa_i = 0.8 + 0.2 * (self.fck / 80)
-        if alfa_i <= 1.0:
-            return alfa_i * self.modulo_elasticidade_inicial
-        else:
-            return self.modulo_elasticidade_inicial
+
+        # --- da NBR 8800 ---
+        return 0.85 * self.modulo_elasticidade_inicial 
+
+        # --- Da NBR 6118 --- 
+        # alfa_i = 0.8 + 0.2 * (self.fck / 80)
+        # if alfa_i <= 1.0:
+        #     return alfa_i * self.modulo_elasticidade_inicial
+        # else:
+        #     return self.modulo_elasticidade_inicial

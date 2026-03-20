@@ -168,9 +168,15 @@ class TestObjetoConcreto:
 
         # valores esperados
 
-        Ecs1 =  0.925 * TipoAgregado.BASALTO.value * 5600 * (fck1) ** 0.5
-        Ecs2 =  0.875 * Ec
-        Ecs3 = 0.875 * agregado.value * 5600 * (fck2) ** 0.5
+        # NBR 6118
+        # Ecs1 =  0.925 * TipoAgregado.BASALTO.value * 5600 * (fck1) ** 0.5
+        # Ecs2 =  0.875 * Ec
+        # Ecs3 = 0.875 * agregado.value * 5600 * (fck2) ** 0.5
+
+        # NBR 8800
+        Ecs1 =  0.85 * TipoAgregado.BASALTO.value * 5600 * (fck1) ** 0.5
+        Ecs2 =  0.85 * Ec
+        Ecs3 = 0.85 * agregado.value * 5600 * (fck2) ** 0.5
 
         # inicializacao das instancias
 
