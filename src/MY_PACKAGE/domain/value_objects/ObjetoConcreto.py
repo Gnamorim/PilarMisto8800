@@ -113,8 +113,18 @@ class ConcretoNormal(ObjetoConcreto):
         
         if not (lower_limit <= self.fck <= upper_limit):
             raise AttributeError(f"Attribute 'fck' must be between {lower_limit} MPa and {upper_limit} MPa to be acceptable")
-            
-  
+        
+        limite_superior_Ec = 45000
+        limite_inferior_Ec = 20000
+    
+        Ec = self._modulo_elasticidade
+
+        if not (Ec == 0.0 or (limite_inferior_Ec <= Ec <= limite_superior_Ec)):
+            raise AttributeError(
+                f"Attribute 'modulo_elasticidade' must be 0.0 or between {limite_inferior_Ec} MPa and {limite_superior_Ec} MPa"
+            )
+
+
     def _calcular_modulo_elasticidade_inicial(self):
         """Calcula o Eci"""
         if self._modulo_elasticidade == 0.0:

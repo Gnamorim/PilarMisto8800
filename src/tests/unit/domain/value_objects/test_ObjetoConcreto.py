@@ -75,29 +75,32 @@ class TestObjetoConcreto:
 
     def test_limite_escopo(self):
         
-        # valores dentro do limite de escopo
-        fck0 = 20
-        fck3 = 50
+        # valores válidos
+        fck_min = 20
+        fck_max = 50
+        Ec_valido = 30000  # dentro do intervalo esperado
 
- 
-        c = ConcretoNormal(fck=fck0)
-        assert isinstance(c,ConcretoNormal)
-        assert c.fck == fck0
+        c = ConcretoNormal(fck=fck_min, modulo_elasticidade=Ec_valido)
+        assert isinstance(c, ConcretoNormal)
+        assert c.fck == fck_min
 
-        c = ConcretoNormal(fck=fck3)
-        assert isinstance(c,ConcretoNormal)
-        assert c.fck == fck3
+        c = ConcretoNormal(fck=fck_max, modulo_elasticidade=Ec_valido)
+        assert isinstance(c, ConcretoNormal)
+        assert c.fck == fck_max
 
-        # valores fora do limite de escopo
+        # --- erros de fck ---
+        with pytest.raises(AttributeError, match="fck"):
+            ConcretoNormal(fck=19, modulo_elasticidade=Ec_valido)
 
-        fck1 = 51
-        fck2 = 19
+        with pytest.raises(AttributeError, match="fck"):
+            ConcretoNormal(fck=51, modulo_elasticidade=Ec_valido)
 
-        with pytest.raises(AttributeError, match= "Attribute 'fck' must be between 20 MPa and 50 MPa to be acceptable"):
-            ConcretoNormal(fck=fck1)
-        
-        with pytest.raises(AttributeError, match= "Attribute 'fck' must be between 20 MPa and 50 MPa to be acceptable"):
-            ConcretoNormal(fck=fck2)
+        # --- erros de modulo_elasticidade ---
+        with pytest.raises(AttributeError, match="modulo_elasticidade"):
+            ConcretoNormal(fck=30, modulo_elasticidade=50000)  # abaixo do limite inferior (45000)
+
+        with pytest.raises(AttributeError, match="modulo_elasticidade"):
+            ConcretoNormal(fck=30, modulo_elasticidade=19000)  # acima do limite superior (20000)
 
     def test_fcd(self):
 

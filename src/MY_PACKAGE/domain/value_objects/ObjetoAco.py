@@ -16,6 +16,13 @@ class ObjetoAco(ABC):
         self.gamma = gamma
 
     def _validate(self):
+        """
+        Valida os parametros de entrada da classe, impedindo a criacao
+        caso os tipos nao correspondam aos esperados pela classe
+
+        Type Enforcing.
+        """
+        
         if not hasattr(self, "fy"):
             raise AttributeError("Attribute 'fy' is missing.")
         if not isinstance(self.fy,(float, int)) or isinstance(self.fy, bool):
@@ -57,7 +64,20 @@ class AcoEstrutural(ObjetoAco):
         self.resistencia_design = self._calcular_fyd()
   
     def _limite_escopo(self):
-        pass
+        """
+        Verifica se o aco esta dentro dos limites da NBR 8800
+        """
+
+        limite_superior_fy = 450
+        limite_inferior_fy = 250
+        limite_superior_Es = 250000
+        limite_inferior_Es = 170000
+
+        if not (limite_inferior_fy <= self.fy <= limite_superior_fy):
+            raise AttributeError(f"Attribute 'fy' must be between {limite_inferior_fy} MPa and {limite_superior_fy} MPa to be acceptable")
+        
+        if not (self.modulo_elasticidade == 0.0 or limite_inferior_Es <= self.modulo_elasticidade <= limite_superior_Es):
+            raise AttributeError(f"Attribute 'modulo_elasticidade' must be between {limite_inferior_Es} MPa and {limite_superior_Es} MPa to be acceptable")
 
   
 
@@ -78,10 +98,18 @@ class AcoArmadura(ObjetoAco):
 
         
     def _limite_escopo(self):
-        pass
+        """
+        Verifica se o aco esta dentro dos limites da NBR 6118
+        """
 
+        limite_superior_fy = 600
+        limite_inferior_fy = 250
+        limite_superior_Es = 250000
+        limite_inferior_Es = 170000
+
+        if not (limite_inferior_fy <= self.fy <= limite_superior_fy):
+            raise AttributeError(f"Attribute 'fy' must be between {limite_inferior_fy} MPa and {limite_superior_fy} MPa to be acceptable")
         
-
-
-
-    
+        if not (limite_inferior_Es <= self.modulo_elasticidade <= limite_superior_Es):
+            raise AttributeError(f"Attribute 'modulo_elasticidade' must be between {limite_inferior_Es} MPa and {limite_superior_Es} MPa to be acceptable")
+   

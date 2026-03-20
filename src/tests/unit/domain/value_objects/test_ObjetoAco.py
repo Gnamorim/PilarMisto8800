@@ -1,18 +1,26 @@
-from MY_PACKAGE.domain.value_objects.ObjetoAco import LeiConstitutivaAco, AcoEstrutural, AcoArmadura
 from math import isclose
 import pytest
+
+from MY_PACKAGE.domain.value_objects.ObjetoAco import LeiConstitutivaAco, AcoEstrutural, AcoArmadura
+
 
 class TestObjetoAcoEstrutural:
 
     def test_inicializacao(self):
+        
+        # definicao das variaveis
 
         fy1 = 250
         fy2 = 300
         Ey = 210000
         gamma = 1.2
 
+        # criacao das instancias 
+
         aco1 = AcoEstrutural(fy1)
         aco2 = AcoEstrutural(fy2,Ey, gamma=gamma)
+
+        # processo de verificacao de compatibilidade das variaveis
 
         assert aco1.fy == fy1
         assert aco1.modulo_elasticidade == 200000
@@ -32,30 +40,48 @@ class TestObjetoAcoEstrutural:
             AcoEstrutural(fy1)
 
     def test_validate_modulo_elasticidade(self):
-        fy1 = 200
+        fy1 = 300
         Ey = 'a'
 
         with pytest.raises(TypeError, match= 'modulo_elasticidade must be a float or an integer'):
             AcoEstrutural(fy1, Ey)
 
     def test_validate_lei_constitutiva(self):
-        fy1 = 200
+        fy1 = 300
         lei = 'a'
 
         with pytest.raises(TypeError, match= f"Operacao deve ser do tipo LeiConstitutivaAco, recebido {type(lei)}"):
             AcoEstrutural(fy1, lei_constitutiva=lei)
 
     def test_validate_gamma(self):
-        fy1 = 200
+        fy1 = 300
         gamma = 'a'   
 
         with pytest.raises(TypeError, match= 'Gamma must be a float'):
              AcoEstrutural(fy1, gamma = gamma)
 
     def test_limite_escopo(self):
-        pass
+       
+        # 1) fy abaixo do limite inferior
+        with pytest.raises(AttributeError, match="fy"):
+            AcoEstrutural(fy=200, modulo_elasticidade=210000)
+
+        # 2) fy acima do limite superior
+        with pytest.raises(AttributeError, match="fy"):
+            AcoEstrutural(fy=650, modulo_elasticidade=210000)
+
+        # 3) Es abaixo do limite inferior
+        with pytest.raises(AttributeError, match="modulo_elasticidade"):
+            AcoEstrutural(fy=300, modulo_elasticidade=160000)
+
+        # 4) Es acima do limite superior
+        with pytest.raises(AttributeError, match="modulo_elasticidade"):
+            AcoEstrutural(fy=300, modulo_elasticidade=260000)
 
     def test_resistencia_design(self):
+        
+        # definicao de variaveis
+
         fy1 = 250
         fy2 = 300
         Ey = 210000
@@ -64,9 +90,13 @@ class TestObjetoAcoEstrutural:
         fd1 = fy1/1.1
         fd2 = fy2/gamma
 
+        # inicializacao das instancias
+
         aco1 = AcoEstrutural(fy1)
         aco2 = AcoEstrutural(fy2,Ey, gamma=gamma)
 
+        # processo de verificacao de compatibilidade das variaveis
+        
         tol = 1e-2
         assert isclose(aco1.resistencia_design, fd1, rel_tol = tol)
         assert isclose(aco2.resistencia_design, fd2, rel_tol = tol)
@@ -75,14 +105,20 @@ class TestObjetoAcoEstrutural:
 class TestObjetoAcoArmadura():
 
     def test_inicializacao(self):
+        
+        # definicao das variaveis
 
         fy1 = 500
         fy2 = 600
         Ey = 220000
         gamma = 1.2
 
+        # inicializacao das instancias
+
         aco1 = AcoArmadura(fy1)
         aco2 = AcoArmadura(fy2,Ey, gamma=gamma)
+
+        # verificacao de compatibilidade
 
         assert aco1.fy == fy1
         assert aco1.modulo_elasticidade == 210000
@@ -123,7 +159,25 @@ class TestObjetoAcoArmadura():
              AcoArmadura(fy1, gamma = gamma)
 
     def test_limite_escopo(self):
-        pass
+        # valores válidos de referência
+        fy_valido = 500
+        Es_valido = 200000
+
+        # 1) fy abaixo do limite inferior
+        with pytest.raises(AttributeError, match="fy"):
+            AcoArmadura(fy=200, modulo_elasticidade=Es_valido)
+
+        # 2) fy acima do limite superior
+        with pytest.raises(AttributeError, match="fy"):
+            AcoArmadura(fy=650, modulo_elasticidade=Es_valido)
+
+        # 3) Es abaixo do limite inferior
+        with pytest.raises(AttributeError, match="modulo_elasticidade"):
+            AcoArmadura(fy=fy_valido, modulo_elasticidade=160000)
+
+        # 4) Es acima do limite superior
+        with pytest.raises(AttributeError, match="modulo_elasticidade"):
+            AcoArmadura(fy=fy_valido, modulo_elasticidade=260000)
 
     def test_resistencia_design(self):
         fy1 = 500
