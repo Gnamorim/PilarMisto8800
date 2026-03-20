@@ -2,7 +2,7 @@ from enum import Enum
 from abc import ABC, abstractmethod
 
 
-
+# CLASSE DE DEFINICAO DO TIPO DE AGREGADO - Necessário para calculo do EC
 class TipoAgregado(Enum):
     BASALTO = 1.2
     DIABASIO = 1.2
@@ -11,23 +11,51 @@ class TipoAgregado(Enum):
     CALCARIO = 0.9
     ARENITO = 0.7
 
-class ObjetoConcreto(ABC):
+# CONTRATO DE CLASSE DE OBJETO
 
+class ObjetoConcreto(ABC):
+    """
+    Essa e a classe abstrata que define o comportamento do concreto.
+
+    Ela calcula a capacidade resistente de design e a validacao da classe,
+    enquanto define contrato de escopo.    
+    """
+    
     fck: float
     modulo_elasticidade: float
     tipo_agregado: TipoAgregado
     gamma: float
     
+    def __init__(
+            self, 
+            fck:float, 
+            modulo_elasticidade:float=0.0, 
+            tipo_agregado: TipoAgregado = TipoAgregado.BASALTO, 
+            gamma: float = 1.4
+        ):
+        """
+        Inicializa a Classe, automaticamente aplicando a validação e a limitacao
+        de escopo do tipo de concreto considerado.
 
-    def __init__(self, fck:float, modulo_elasticidade:float=0.0, tipo_agregado: TipoAgregado = TipoAgregado.BASALTO, gamma: float = 1.4):
+        Calcula tambem o fcd e salva em um variavel acessivel
+        """
+
         self.fck = fck
         self._modulo_elasticidade = modulo_elasticidade
         self.tipo_agregado = tipo_agregado
         self.gamma = gamma
         self._validate()
+        self._limite_escopo()
         self.fcd = self._calcular_fcd()
 
     def _validate(self):
+        """
+        Valida os parametros de entrada da classe, impedindo a criacao
+        caso os tipos nao correspondam aos esperados pela classe
+
+        Type Enforcing.
+        """
+        
         if not hasattr(self, "fck"):
             raise AttributeError("Attribute 'fck' is missing.")
         if not isinstance(self.fck,(float, int)) or isinstance(self.fck, bool):
@@ -61,22 +89,34 @@ class ConcretoNormal(ObjetoConcreto):
     gamma: float
     
 
-    def __init__(self, fck:float, modulo_elasticidade:float=0.0, tipo_agregado: TipoAgregado = TipoAgregado.BASALTO, gamma: float = 1.4):
-        self.fck = fck
-        self._modulo_elasticidade = modulo_elasticidade
-        self.tipo_agregado = tipo_agregado
-        self.gamma = gamma
-        self._validate()
-        self._limite_escopo()
-        self.fcd = self._calcular_fcd()
+    def __init__(
+            self, 
+            fck:float, 
+            modulo_elasticidade:float=0.0, 
+            tipo_agregado: TipoAgregado = TipoAgregado.BASALTO, 
+            gamma: float = 1.4
+            ):
+        
+        super().__init__(fck, modulo_elasticidade, tipo_agregado,gamma)
         self.modulo_elasticidade_inicial = self._calcular_modulo_elasticidade_inicial()
         self.modulo_elasticidade_secante = self._calcular_modulo_elasticidade_secante()
 
         
     def _limite_escopo(self):
-        pass
+        """
+        Verifica se o concreto esta dentro do limite normativo para a classe concreta
+        """
+
+        # limite de resistencia do concreto normal
+        lower_limit = 20
+        upper_limit = 50
+        
+        if not (lower_limit <= self.fck <= upper_limit):
+            raise AttributeError(f"Attribute 'fck' must be between {lower_limit} MPa and {upper_limit} MPa to be acceptable")
+            
   
     def _calcular_modulo_elasticidade_inicial(self):
+        """Calcula o Eci"""
         if self._modulo_elasticidade == 0.0:
             Ec = self.tipo_agregado.value * 5600 * (self.fck) ** 0.5
             return Ec 
@@ -84,6 +124,7 @@ class ConcretoNormal(ObjetoConcreto):
             return self._modulo_elasticidade
         
     def _calcular_modulo_elasticidade_secante(self):
+        """Calcula o Ecs"""
         alfa_i = 0.8 + 0.2 * (self.fck / 80)
         if alfa_i <= 1.0:
             return alfa_i * self.modulo_elasticidade_inicial
