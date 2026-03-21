@@ -1,23 +1,23 @@
-from ObjetoPilarMisto import ObjetoPilarMisto
-from ObjetoConcreto import  ConcretoNormal
-from ObjetoAco import AcoEstrutural, AcoArmadura
+from MY_PACKAGE.domain.value_objects.ObjetoPilarMisto import ObjetoPilarMisto
+from MY_PACKAGE.domain.value_objects.ObjetoConcreto import  ConcretoNormal
+from MY_PACKAGE.domain.value_objects.ObjetoAco import AcoEstrutural, AcoArmadura
 
 import numpy as np
 
 class PilarRetangularPreenchido(ObjetoPilarMisto):
 
-    material_aco_estrutural:AcoEstrutural
-    material_concreto: ConcretoNormal
-    material_armadura: AcoArmadura
-
     altura_tubo:float
     largura_tubo:float
     espessura_tubo:float
-    
+
+    material_aco_estrutural:AcoEstrutural
+    material_concreto: ConcretoNormal
+    material_armadura: AcoArmadura | None
+
     diametro_armadura_longitudinal:float
     numero_armadura_longitudinal:int
     diametro_armadura_transversal: float
-    numero_armadura_transversal: int
+    espacamento_armadura_transversal: float
     cobrimento:float
 
     def __init__(self,
@@ -26,30 +26,59 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
             espessura_tubo:float,
             material_aco_estrutural:AcoEstrutural, 
             material_concreto: ConcretoNormal,
-            material_armadura: AcoArmadura, # posso incluir algo como None, para quando não tiver armadura? 
+            material_armadura: AcoArmadura | None = None,
             diametro_armadura_longitudinal:float = 0.0,
             numero_armadura_longitudinal:int = 0,
             diametro_armadura_transversal: float = 0.0,
-            numero_armadura_transversal: int = 0,
+            espacamento_armadura_transversal: float = 0.0,
             cobrimento:float = 0.0
         ):
 
         self.altura_tubo = altura_tubo
         self.largura_tubo = largura_tubo
         self.espessura_tubo = espessura_tubo
-        self.material_aco_estrutural = material_aco_estrutural
-        self.material_concreto = material_concreto
-        self.material_armadura = material_armadura
-        self.diametro_armadura_longitudinal = diametro_armadura_longitudinal
-        self.numero_armadura_longitudinal = numero_armadura_longitudinal
-        self.diametro_armadura_transversal = diametro_armadura_transversal
-        self.numero_armadura_transversal = numero_armadura_transversal
-        self.cobrimento = cobrimento
+
+        super().__init__(
+            material_aco_estrutural, 
+            material_concreto,
+            material_armadura,
+            diametro_armadura_longitudinal,
+            numero_armadura_longitudinal,
+            diametro_armadura_transversal,
+            espacamento_armadura_transversal,
+            cobrimento
+            )
+        
         self._validate()
+        self._limite_escopo()
         
 
     def _validate(self):
-        pass
+        """
+        Valida os parâmetros do pilar circular preenchido.
+        """
+        
+        super()._validate()  # ← chama validação da classe base
+
+        # Geometria do tubo
+
+        for attr in ["diametro_tubo", "espessura_tubo"]:
+            val = getattr(self, attr)
+            if not isinstance(val, (int, float)) or isinstance(val, bool):
+                raise TypeError(f"{attr} deve ser numérico")
+
+       
+        if self.diametro_tubo <= 0:
+            raise ValueError("diametro_tubo deve ser positivo")
+
+        if self.espessura_tubo <= 0:
+            raise ValueError("espessura_tubo deve ser positiva")
+
+        if self.diametro_interno <= 0:
+            raise ValueError("diametro_interno inválido (espessura muito grande)")
+
+        if self.espessura_tubo >= self.diametro_tubo / 2:
+            raise ValueError("espessura_tubo fisicamente inválida")
 
     def _limite_escopo(self):
         pass
