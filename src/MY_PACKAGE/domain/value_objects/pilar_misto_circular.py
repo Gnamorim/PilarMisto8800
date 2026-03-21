@@ -37,13 +37,6 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
         self.espessura_tubo = espessura_tubo
         self.diametro_interno = diametro_tubo - 2 * espessura_tubo
 
-        if material_armadura is None:
-            diametro_armadura_longitudinal = 0.0
-            numero_armadura_longitudinal = 0
-            diametro_armadura_transversal = 0.0
-            espacamento_armadura_transversal = 0
-            cobrimento = 0.0 
-
         super().__init__(
             material_aco_estrutural, 
             material_concreto,
@@ -56,8 +49,17 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
             )
         
         self._validate()
+
         self._limite_escopo()
-        
+
+
+
+    # -----------------------------------------------
+    #
+    # Funções de validação e limitação de escopo
+    #
+    # -----------------------------------------------
+
     def _validate(self):
         """
         Valida os parâmetros do pilar circular preenchido.
@@ -87,7 +89,19 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
 
     def _limite_escopo(self):
-        pass
+        super()._limite_escopo()
+
+    
+    # -------------------------------------
+    # Propriedades mecânicas e Geométricas
+    # -------------------------------------
+
+    @property
+    def fcd1(self):
+        return self.material_concreto.fcd * 0.95 * 1
+
+
+    # --- Informações Geométricas
 
     def area_aco(self):
         return ( ( np.pi * ( (self.diametro_tubo ** 2) - (self.diametro_interno ** 2 ) ) ) / 4)
@@ -97,3 +111,32 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     
     def area_concreto(self):
         return ( ( np.pi * ( self.diametro_interno ** 2 ) ) / 4) - self.area_armadura()
+    
+    def raio_armadura(self):
+        return ((
+            self.diametro_interno - (2 * self.cobrimentor
+            ) - self.diametro_armadura_longitudinal - (2 * self.diametro_armadura_transversal)
+            ) / 2)
+
+    def momento_inercia_aco_z(self):
+        pass
+
+
+
+    # --- Capacidades axiais ---
+    # com exceção da armadura, os calculos estão implementados no ObjetoPilarMisto
+    
+    # Armadura
+    def capacidade_axial_plastico_armadura(self):
+        if self.material_armadura:
+            return self.area_armadura() * self.material_concreto.fck * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
+        else:
+            return 0.0
+
+    def capacidade_axial_plastico_armadura_design(self):
+        if self.material_armadura:
+            return self.area_armadura() * self.fcd1 * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
+        else:
+            return 0.0
+        
+

@@ -67,9 +67,19 @@ class PilarRevestido(ObjetoPilarMisto):
             )
         
         self._validate()
+
         self._limite_escopo()
 
-def _validate(self):
+
+
+    # -----------------------------------------------
+    #
+    # Funções de validação e limitação de escopo
+    #
+    # -----------------------------------------------
+
+
+    def _validate(self):
         """
         Valida os parâmetros do pilar circular preenchido.
         """
@@ -96,9 +106,26 @@ def _validate(self):
         if self.espessura_tubo >= self.diametro_tubo / 2:
             raise ValueError("espessura_tubo fisicamente inválida")
 
-    def _limite_escopo(self):
-        pass
 
+
+    def _limite_escopo(self):
+        super()._limite_escopo()
+
+
+    # -------------------------------------
+    # Propriedades mecânicas e Geométricas
+    # -------------------------------------
+
+        
+    @property
+    def fcd1(self):
+        alpha = ((40/self.material_concreto.fck)**(1/3)) 
+        if alpha >= 1:
+            alpha = 1
+        return self.material_concreto.fcd * 0.85 * alpha
+
+
+    # --- Informações Geométricas --- 
     def area_aco(self):
         return ( 2 * (self.largura_perfil * self.espessura_mesa) + ( self.espessura_alma * ( self.altura_perfil - 2 * self.espessura_mesa)))
                 
@@ -107,3 +134,22 @@ def _validate(self):
     
     def area_concreto(self):
         return (( self.altura_concreto * self.largura_concreto ) - self.area_armadura() - self.area_aco())
+    
+
+
+    # --- Capacidades axiais ---
+    # com exceção da armadura, os calculos estão implementados no ObjetoPilarMisto
+
+    # Armadura
+    def capacidade_axial_plastico_armadura(self):
+        if self.material_armadura:
+            return self.area_armadura() * self.material_armadura.fy
+        else:
+            return 0.0
+
+    def capacidade_axial_plastico_armadura_design(self):
+        if self.material_armadura:
+            return self.area_armadura() * self.material_armadura.resistencia_design
+        else:
+            return 0.0
+        

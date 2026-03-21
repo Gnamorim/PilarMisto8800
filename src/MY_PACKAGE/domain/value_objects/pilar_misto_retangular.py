@@ -50,8 +50,15 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
             )
         
         self._validate()
+
         self._limite_escopo()
         
+    # -----------------------------------------------
+    #
+    # Funções de validação e limitação de escopo
+    #
+    # -----------------------------------------------
+
 
     def _validate(self):
         """
@@ -80,9 +87,22 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
         if self.espessura_tubo >= self.diametro_tubo / 2:
             raise ValueError("espessura_tubo fisicamente inválida")
 
-    def _limite_escopo(self):
-        pass
 
+    def _limite_escopo(self):
+        super()._limite_escopo()
+
+
+    # -------------------------------------
+    # Propriedades mecânicas e Geométricas
+    # -------------------------------------
+
+
+    @property
+    def fcd1(self):
+        return self.material_concreto.fcd * 0.85 * 1
+
+
+    # --- Informações Geométricas --- 
     def area_aco(self):
         return ( self.altura_tubo * self.largura_tubo - (( self.largura_tubo - 2 * self.espessura_tubo )*( self.altura_tubo - 2*self.espessura_tubo)))
     
@@ -91,3 +111,21 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     
     def area_concreto(self):
         return ((( self.largura_tubo - 2 * self.espessura_tubo )*( self.altura_tubo - 2*self.espessura_tubo)) - self.area_armadura())
+    
+    
+
+    # --- Capacidades axiais ---
+    # com exceção da armadura, os calculos estão implementados no ObjetoPilarMisto
+    
+    # Armadura
+    def capacidade_axial_plastico_armadura(self):
+        if self.material_armadura:
+            return self.area_armadura() * self.material_concreto.fck * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
+        else:
+            return 0.0
+
+    def capacidade_axial_plastico_armadura_design(self):
+        if self.material_armadura:
+            return self.area_armadura() * self.fcd1 * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
+        else:
+            return 0.0
