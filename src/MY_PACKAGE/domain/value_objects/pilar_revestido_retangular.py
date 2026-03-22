@@ -16,8 +16,7 @@ class PilarRevestido(ObjetoPilarMisto):
     largura_perfil:float
     espessura_mesa:float
     espessura_alma:float
-    cx: float # não tenho nomenclatura adequada
-    cy: float # não tenho nomenclatura adequada - ver imagem M1 da norma
+
 
     diametro_armadura_longitudinal:float
     numero_armadura_longitudinal:int
@@ -52,8 +51,8 @@ class PilarRevestido(ObjetoPilarMisto):
         self.largura_perfil = largura_perfil
         self.espessura_mesa = espessura_mesa
         self.espessura_alma = espessura_alma
-        self.cx = cx
-        self.cy = cy
+        self.cx = (self.largura_concreto - self.largura_perfil) /2
+        self.cy = (self.altura_concreto - self.altura_perfil) /2
 
         super().__init__(
             material_aco_estrutural,
@@ -88,28 +87,33 @@ class PilarRevestido(ObjetoPilarMisto):
 
         # Geometria do tubo
 
-        for attr in ["diametro_tubo", "espessura_tubo"]:
-            val = getattr(self, attr)
-            if not isinstance(val, (int, float)) or isinstance(val, bool):
-                raise TypeError(f"{attr} deve ser numérico")
+        # for attr in ["diametro_tubo", "espessura_tubo"]:
+        #     val = getattr(self, attr)
+        #     if not isinstance(val, (int, float)) or isinstance(val, bool):
+        #         raise TypeError(f"{attr} deve ser numérico")
 
        
-        if self.diametro_tubo <= 0:
-            raise ValueError("diametro_tubo deve ser positivo")
+        # if self.diametro_tubo <= 0:
+        #     raise ValueError("diametro_tubo deve ser positivo")
 
-        if self.espessura_tubo <= 0:
-            raise ValueError("espessura_tubo deve ser positiva")
+        # if self.espessura_tubo <= 0:
+        #     raise ValueError("espessura_tubo deve ser positiva")
 
-        if self.diametro_interno <= 0:
-            raise ValueError("diametro_interno inválido (espessura muito grande)")
+        # if self.diametro_interno <= 0:
+        #     raise ValueError("diametro_interno inválido (espessura muito grande)")
 
-        if self.espessura_tubo >= self.diametro_tubo / 2:
-            raise ValueError("espessura_tubo fisicamente inválida")
+        # if self.espessura_tubo >= self.diametro_tubo / 2:
+        #     raise ValueError("espessura_tubo fisicamente inválida")
 
 
 
     def _limite_escopo(self):
         super()._limite_escopo()
+
+        limite = min(self.largura_perfil, 40)
+
+        if self.cx < limite or self.cy < limite:
+            raise ValueError("cobrimento do perfil menor que o minimo normativo")
 
 
     # -------------------------------------

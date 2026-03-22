@@ -1,6 +1,7 @@
 from MY_PACKAGE.domain.value_objects.ObjetoPilarMisto import ObjetoPilarMisto
 from MY_PACKAGE.domain.value_objects.ObjetoConcreto import  ConcretoNormal
 from MY_PACKAGE.domain.value_objects.ObjetoAco import AcoEstrutural, AcoArmadura
+from MY_PACKAGE.domain.value_objects._classe_secao import Secao
 
 import numpy as np
 
@@ -69,27 +70,42 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
 
         # Geometria do tubo
 
-        for attr in ["diametro_tubo", "espessura_tubo"]:
+        for attr in ["altura_tubo", "largura_tubo", "espessura_tubo"]:
             val = getattr(self, attr)
             if not isinstance(val, (int, float)) or isinstance(val, bool):
                 raise TypeError(f"{attr} deve ser numérico")
 
        
-        if self.diametro_tubo <= 0:
-            raise ValueError("diametro_tubo deve ser positivo")
+        # if self.diametro_tubo <= 0:
+        #     raise ValueError("diametro_tubo deve ser positivo")
 
-        if self.espessura_tubo <= 0:
-            raise ValueError("espessura_tubo deve ser positiva")
+        # if self.espessura_tubo <= 0:
+        #     raise ValueError("espessura_tubo deve ser positiva")
 
-        if self.diametro_interno <= 0:
-            raise ValueError("diametro_interno inválido (espessura muito grande)")
+        # if self.diametro_interno <= 0:
+        #     raise ValueError("diametro_interno inválido (espessura muito grande)")
 
-        if self.espessura_tubo >= self.diametro_tubo / 2:
-            raise ValueError("espessura_tubo fisicamente inválida")
+        # if self.espessura_tubo >= self.diametro_tubo / 2:
+        #     raise ValueError("espessura_tubo fisicamente inválida")
 
 
     def _limite_escopo(self):
         super()._limite_escopo()
+
+        razao = self.largura_tubo / self.altura_tubo
+
+        if not ( 0.2 <= razao <= 5.0 ):
+            raise ValueError("a razão entre largura_tubo e altura_tubo deve estar entre 0.2 e 5")
+
+        # Junta todos os resultados em uma lista única
+        estados = [
+            self.esbeltez_compressao,
+            *self.esbeltez_flexao_XX,
+            *self.esbeltez_flexao_YY,
+        ]
+
+        if Secao.FORA_ESCOPO in estados:
+            raise ValueError("Esbeltez do tubo fora do limite normativo")
 
 
     # -------------------------------------
@@ -103,6 +119,9 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
 
 
     # --- Informações Geométricas --- 
+
+    # Areas 
+
     def area_aco(self):
         return ( self.altura_tubo * self.largura_tubo - (( self.largura_tubo - 2 * self.espessura_tubo )*( self.altura_tubo - 2*self.espessura_tubo)))
     
@@ -112,7 +131,119 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     def area_concreto(self):
         return ((( self.largura_tubo - 2 * self.espessura_tubo )*( self.altura_tubo - 2*self.espessura_tubo)) - self.area_armadura())
     
+
+    # Esbeltez do perfil
+
+    @property
+    def esbeltez_perfil_compressão(self):
+       
+       largura = min(self.largura_tubo, self.altura_tubo)
+       
+       return largura / self.espessura_tubo
     
+    @property
+    def esbeltez_perfil_paralelo_XX(self):
+       return self.largura_tubo / self.espessura_tubo
+    
+    @property
+    def esbeltez_perfil_paralelo_YY(self):
+       return self.espessura_tubo / self.espessura_tubo
+    
+    @property
+    def esbeltez_perfil_limite_compressao(self):
+        return 2.26 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+
+    @property
+    def esbeltez_perfil_residual_compressao(self):
+        return 3.0 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+
+    @property
+    def esbeltez_perfil_limite_flexao_alma(self):
+        return 3.00 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+
+    @property
+    def esbeltez_perfil_residual_flexao_alma(self):
+        return 5.70 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+    
+    @property
+    def esbeltez_perfil_limite_flexao_mesa(self):
+        return 2.26 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+
+    @property
+    def esbeltez_perfil_residual_flexao_mesa(self):
+        return 3.0 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+    
+    @property
+    def esbeltez_perfil_limite_superior(self):
+        return 5.0 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+    
+    
+    @property
+    def esbeltez_compressao(self):
+        if self.esbeltez_perfil <= self.esbeltez_perfil_limite_compressao:
+            return Secao.COMPACTO
+        
+        elif self.esbeltez_perfil <= self.esbeltez_perfil_residual_compressao:
+            return Secao.NAO_COMPACTO
+        
+        elif self.esbeltez_perfil <= self.esbeltez_perfil_limite_superior:
+            return Secao.ESBELTO
+        
+        else:
+            return Secao.FORA_ESCOPO
+
+    @property    
+    def esbeltez_flexao_XX(self):
+        if self.esbeltez_perfil_paralelo_XX <= self.esbeltez_perfil_limite_flexao_alma:
+            a = Secao.COMPACTO
+        
+        elif self.esbeltez_perfil_paralelo_XX <= self.esbeltez_perfil_residual_flexao_alma:
+            a = Secao.NAO_COMPACTO
+        
+        else:
+            a = Secao.FORA_ESCOPO
+        
+        if self.esbeltez_perfil_paralelo_YY <= self.esbeltez_perfil_limite_flexao_mesa:
+            b = Secao.COMPACTO
+        
+        elif self.esbeltez_perfil_paralelo_YY <= self.esbeltez_perfil_residual_flexao_mesa:
+            b = Secao.NAO_COMPACTO
+        
+        elif self.esbeltez_perfil_paralelo_YY <= self.esbeltez_perfil_limite_superior:
+            b = Secao.ESBELTO
+        
+        else:
+            b = Secao.FORA_ESCOPO
+        
+        return [a,b]
+        
+    
+    @property    
+    def esbeltez_flexao_YY(self):
+        if self.esbeltez_perfil_paralelo_YY <= self.esbeltez_perfil_limite_flexao_alma:
+            a = Secao.COMPACTO
+        
+        elif self.esbeltez_perfil_paralelo_YY <= self.esbeltez_perfil_residual_flexao_alma:
+            a = Secao.NAO_COMPACTO
+        
+        else:
+            a = Secao.FORA_ESCOPO
+        
+        if self.esbeltez_perfil_paralelo_XX <= self.esbeltez_perfil_limite_flexao_mesa:
+            b = Secao.COMPACTO
+        
+        elif self.esbeltez_perfil_paralelo_XX <= self.esbeltez_perfil_residual_flexao_mesa:
+            b = Secao.NAO_COMPACTO
+        
+        elif self.esbeltez_perfil_paralelo_XX <= self.esbeltez_perfil_limite_superior:
+            b = Secao.ESBELTO
+        
+        else:
+            b = Secao.FORA_ESCOPO
+        
+        return [a,b]
+
+
 
     # --- Capacidades axiais ---
     # com exceção da armadura, os calculos estão implementados no ObjetoPilarMisto

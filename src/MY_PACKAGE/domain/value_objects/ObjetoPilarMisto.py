@@ -182,35 +182,36 @@ class ObjetoPilarMisto(ABC):
     def area_total(self):
         return self.area_concreto() + self.area_aco() + self.area_armadura() 
 
-    # # momento de inercia
+    # momento de inercia
 
-    # @abstractmethod
-    # def momento_inercia_aco_x(self):
-    #     pass
+    @abstractmethod
+    def momento_inercia_aco_x(self):
+        pass
 
-    # @abstractmethod
-    # def momento_inercia_concreto_x(self):
-    #     pass
+    @abstractmethod
+    def momento_inercia_concreto_x(self):
+        pass
     
-    # @abstractmethod
-    # def momento_inercia_armadura_x(self):
-    #     pass
+    @abstractmethod
+    def momento_inercia_armadura_x(self):
+        pass
 
-    # @abstractmethod
-    # def momento_inercia_aco_y(self):
-    #     pass
+    @abstractmethod
+    def momento_inercia_aco_y(self):
+        pass
 
-    # @abstractmethod
-    # def momento_inercia_concreto_y(self):
-    #     pass
+    @abstractmethod
+    def momento_inercia_concreto_y(self):
+        pass
     
-    # @abstractmethod
-    # def momento_inercia_armadura_y(self):
-    #     pass    
+    @abstractmethod
+    def momento_inercia_armadura_y(self):
+        pass    
 
-    # @abstractmethod
-    # def esbeltez_perfil(self):
-    #     pass
+    @property
+    @abstractmethod
+    def esbeltez_perfil(self):
+        pass
 
     # # modulo resistente plastico
 
