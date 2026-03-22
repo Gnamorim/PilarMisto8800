@@ -153,7 +153,7 @@ class ObjetoPilarMisto(ABC):
         # --- fator de contribuição entre 0.1 e 0.9
 
         NaplRd = self.capacidade_axial_plastico_aco_design()
-        NplRd = self.capacidade_axial_plastico_section_design()
+        NplRd = self.capacidade_axial_plastico_design()
 
         fator_contribuicao = NaplRd/NplRd
 
@@ -213,48 +213,73 @@ class ObjetoPilarMisto(ABC):
     def esbeltez_perfil(self):
         pass
 
-    # # modulo resistente plastico
+    # modulo resistente plastico
 
-    # @abstractmethod
-    # def modulo_resistente_plastico_aco_x(self):
-    #     pass
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_aco_x(self):
+        pass
 
-    # @abstractmethod
-    # def modulo_resistente_plastico_concreto_x(self):
-    #     pass
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_concreto_x(self):
+        pass
 
-    # @abstractmethod
-    # def modulo_resistente_plastico_armadura_x(self):
-    #     pass
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_armadura_x(self):
+        pass
 
-    # @abstractmethod
-    # def modulo_resistente_plastico_aco_y(self):
-    #     pass
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_aco_y(self):
+        pass
 
-    # @abstractmethod
-    # def modulo_resistente_plastico_concreto_y(self):
-    #     pass
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_concreto_y(self):
+        pass
 
-    # @abstractmethod
-    # def modulo_resistente_plastico_armadura_y(self):
-    #     pass
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_armadura_y(self):
+        pass
+
+    
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_aco_x_lnp(self):
+        pass
+
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_concreto_x_lnp(self):
+        pass
+
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_armadura_x_lnp(self):
+        pass
+
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_aco_y_lnp(self):
+        pass
+
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_concreto_y_lnp(self):
+        pass
+
+    @property
+    @abstractmethod
+    def modulo_resistente_plastico_armadura_y_lnp(self):
+        pass
 
 
-    # # CARACTERISTICAS DE MATERIAL
-
-    # @abstractmethod
-    # def resistencia_nominal_aco(self):
-    #     pass
-
-    # @abstractmethod
-    # def resistencia_nominal_concreto(self):
-    #     pass
-
-    # @abstractmethod
-    # def resistencia_nominal_armadura(self):
-    #     pass
-
-    # # CAPACIDADES RESISTENTES 
+    # -------------------------------
+    # CAPACIDADES RESISTENTES 
+    # -------------------------------
 
     # --- Capacidades axiais ---
 
@@ -285,12 +310,178 @@ class ObjetoPilarMisto(ABC):
     
 
     # seção transversal
-    def capacidade_axial_plastico_section(self):
+    def capacidade_axial_plastico(self):
         return (self.capacidade_axial_plastico_aco() + self.capacidade_axial_plastico_armadura() + self.capacidade_axial_plastico_concreto())
     
-    def capacidade_axial_plastico_section_design(self):
+    def capacidade_axial_plastico_design(self):
         return (self.capacidade_axial_plastico_aco_design() + self.capacidade_axial_plastico_armadura_design() + self.capacidade_axial_plastico_concreto_design())
 
+
+
+    # --- Capacidades de Flexão ---
+    # nominal
+
+    @property
+    def momento_resistente_plastico_aco_xx(self):
+        return self.material_aco_estrutural.fy * (self.modulo_resistente_plastico_aco_x - self.modulo_resistente_plastico_aco_x_lnp)
+
+    @property
+    def momento_resistente_plastico_aco_yy(self):
+        return self.material_aco_estrutural.fy * (self.modulo_resistente_plastico_aco_y - self.modulo_resistente_plastico_aco_y_lnp)
+
+    @property
+    def momento_resistente_plastico_concreto_xx(self):
+        return 0.5 * self.material_concreto.fck * (self.modulo_resistente_plastico_concreto_x - self.modulo_resistente_plastico_concreto_x_lnp)
+
+    @property
+    def momento_resistente_plastico_concreto_yy(self):
+        return 0.5 * self.material_concreto.fck * (self.modulo_resistente_plastico_concreto_y - self.modulo_resistente_plastico_concreto_y_lnp)
+
+    @property
+    def momento_resistente_plastico_armadura_xx(self):
+        if not self.material_armadura:
+            return 0
+
+        return self.material_armadura.fy * (self.modulo_resistente_plastico_armadura_x - self.modulo_resistente_plastico_armadura_x_lnp)
+
+    @property
+    def momento_resistente_plastico_armadura_yy(self):
+        if not self.material_armadura:
+            return 0
+
+        return self.material_armadura.fy * (self.modulo_resistente_plastico_armadura_y - self.modulo_resistente_plastico_armadura_y_lnp)
+
+    @property
+    def momento_resistente_plastico_total_xx(self):
+        return (self.momento_resistente_plastico_aco_xx + self.momento_resistente_plastico_concreto_xx + self.momento_resistente_plastico_armadura_xx)
+
+    @property
+    def momento_resistente_plastico_total_yy(self):
+        return (self.momento_resistente_plastico_aco_yy + self.momento_resistente_plastico_concreto_yy + self.momento_resistente_plastico_armadura_yy)
+    
+
+    # de calculo
+
+    @property
+    def momento_resistente_plastico_aco_design_xx(self):
+        return self.material_aco_estrutural.resistencia_design * (self.modulo_resistente_plastico_aco_x - self.modulo_resistente_plastico_aco_x_lnp)
+
+    @property
+    def momento_resistente_plastico_aco_design_yy(self):
+        return self.material_aco_estrutural.resistencia_design * (self.modulo_resistente_plastico_aco_y - self.modulo_resistente_plastico_aco_y_lnp)
+
+    @property
+    def momento_resistente_plastico_concreto_design_xx(self):
+        return 0.5 * self.fcd1 * (self.modulo_resistente_plastico_concreto_x - self.modulo_resistente_plastico_concreto_x_lnp)
+
+    @property
+    def momento_resistente_plastico_concreto_design_yy(self):
+        return 0.5 * self.fcd1 * (self.modulo_resistente_plastico_concreto_y - self.modulo_resistente_plastico_concreto_y_lnp)
+
+    @property
+    def momento_resistente_plastico_armadura_design_xx(self):
+        if not self.material_armadura:
+            return 0
+
+        return self.material_armadura.resistencia_design * (self.modulo_resistente_plastico_armadura_x - self.modulo_resistente_plastico_armadura_x_lnp)
+
+    @property
+    def momento_resistente_plastico_armadura_design_yy(self):
+        if not self.material_armadura:
+            return 0
+
+        return self.material_armadura.resistencia_design * (self.modulo_resistente_plastico_armadura_y - self.modulo_resistente_plastico_armadura_y_lnp)
+
+    @property
+    def momento_resistente_plastico_total_design_xx(self):
+        return (self.momento_resistente_plastico_aco_design_xx + self.momento_resistente_plastico_concreto_design_xx + self.momento_resistente_plastico_armadura_design_xx)
+
+    @property
+    def momento_resistente_plastico_total_design_yy(self):
+        return (self.momento_resistente_plastico_aco_design_yy + self.momento_resistente_plastico_concreto_design_yy + self.momento_resistente_plastico_armadura_design_yy)
+    
+
+    # --- Capacidades de flexão máxima ---
+    # nominal
+
+    @property
+    def momento_resistente_maximo_plastico_aco_xx(self):
+        return self.material_aco_estrutural.fy * (self.modulo_resistente_plastico_aco_x )
+
+    @property
+    def momento_resistente_maximo_plastico_aco_yy(self):
+        return self.material_aco_estrutural.fy * (self.modulo_resistente_plastico_aco_y )
+
+    @property
+    def momento_resistente_maximo_plastico_concreto_xx(self):
+        return 0.5 * self.material_concreto.fck * (self.modulo_resistente_plastico_concreto_x)
+
+    @property
+    def momento_resistente_maximo_plastico_concreto_yy(self):
+        return 0.5 * self.material_concreto.fck * (self.modulo_resistente_plastico_concreto_y)
+
+    @property
+    def momento_resistente_maximo_plastico_armadura_xx(self):
+        if not self.material_armadura:
+            return 0
+
+        return self.material_armadura.fy * (self.modulo_resistente_plastico_armadura_x )
+
+    @property
+    def momento_resistente_maximo_plastico_armadura_yy(self):
+        if not self.material_armadura:
+            return 0
+
+        return self.material_armadura.fy * (self.modulo_resistente_plastico_armadura_y )
+
+    @property
+    def momento_resistente_maximo_plastico_total_xx(self):
+        return (self.momento_resistente_maximo_plastico_aco_xx + self.momento_resistente_maximo_plastico_concreto_xx + self.momento_resistente_maximo_plastico_armadura_xx)
+
+    @property
+    def momento_resistente_maximo_plastico_total_yy(self):
+        return (self.momento_resistente_maximo_plastico_aco_yy + self.momento_resistente_maximo_plastico_concreto_yy + self.momento_resistente_maximo_plastico_armadura_yy)
+    
+
+    # de calculo
+
+    @property
+    def momento_resistente_maximo_plastico_aco_design_xx(self):
+        return self.material_aco_estrutural.resistencia_design * (self.modulo_resistente_plastico_aco_x)
+
+    @property
+    def momento_resistente_maximo_plastico_aco_design_yy(self):
+        return self.material_aco_estrutural.resistencia_design * (self.modulo_resistente_plastico_aco_y)
+
+    @property
+    def momento_resistente_maximo_plastico_concreto_design_xx(self):
+        return 0.5 * self.fcd1 * (self.modulo_resistente_plastico_concreto_x)
+
+    @property
+    def momento_resistente_maximo_plastico_concreto_design_yy(self):
+        return 0.5 * self.fcd1 * (self.modulo_resistente_plastico_concreto_y)
+
+    @property
+    def momento_resistente_maximo_plastico_armadura_design_xx(self):
+        if not self.material_armadura:
+            return 0
+
+        return self.material_armadura.resistencia_design * (self.modulo_resistente_plastico_armadura_x)
+
+    @property
+    def momento_resistente_maximo_plastico_armadura_design_yy(self):
+        if not self.material_armadura:
+            return 0
+
+        return self.material_armadura.resistencia_design * (self.modulo_resistente_plastico_armadura_y)
+
+    @property
+    def momento_resistente_maximo_plastico_total_design_xx(self):
+        return (self.momento_resistente_maximo_plastico_aco_design_xx + self.momento_resistente_maximo_plastico_concreto_design_xx + self.momento_resistente_maximo_plastico_armadura_design_xx)
+
+    @property
+    def momento_resistente_maximo_plastico_total_design_yy(self):
+        return (self.momento_resistente_maximo_plastico_aco_design_yy + self.momento_resistente_maximo_plastico_concreto_design_yy + self.momento_resistente_maximo_plastico_armadura_design_yy)
 
 
 

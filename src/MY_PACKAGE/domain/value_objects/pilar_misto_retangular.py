@@ -151,31 +151,31 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     
     @property
     def esbeltez_perfil_limite_compressao(self):
-        return 2.26 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+        return 2.26 * (self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy) ** 0.5
 
     @property
     def esbeltez_perfil_residual_compressao(self):
-        return 3.0 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+        return 3.0 * (self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy) ** 0.5
 
     @property
     def esbeltez_perfil_limite_flexao_alma(self):
-        return 3.00 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+        return 3.00 * (self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy) ** 0.5
 
     @property
     def esbeltez_perfil_residual_flexao_alma(self):
-        return 5.70 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+        return 5.70 * (self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy) ** 0.5
     
     @property
     def esbeltez_perfil_limite_flexao_mesa(self):
-        return 2.26 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+        return 2.26 * (self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy) ** 0.5
 
     @property
     def esbeltez_perfil_residual_flexao_mesa(self):
-        return 3.0 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+        return 3.0 * (self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy) ** 0.5
     
     @property
     def esbeltez_perfil_limite_superior(self):
-        return 5.0 * (self.area_aco() / self.material_aco_estrutural.fy) ** 0.5
+        return 5.0 * (self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy) ** 0.5
     
     
     @property

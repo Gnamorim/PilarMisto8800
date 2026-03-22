@@ -52,7 +52,13 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
         self._validate()
 
         self._limite_escopo()
-
+        
+        hnz, Asnz = self._propriedades_linha_neutra_plastica_xx()
+        hny, Asny = self._propriedades_linha_neutra_plastica_yy()
+        self.linha_neutra_plastica_xx = hnz
+        self.area_linha_neutra_plastica_xx = Asnz
+        self.linha_neutra_plastica_yy = hny
+        self.area_linha_neutra_plastica_yy = Asny
 
 
     # -----------------------------------------------
@@ -91,7 +97,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
     def _limite_escopo(self):
         super()._limite_escopo()
-        
+
         if Secao.FORA_ESCOPO in (self.esbeltez_compressao, self.esbeltez_flexao):
             raise ValueError(" esbeltez do tubo fora do limite normativo")
 
@@ -127,19 +133,19 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     
     @property
     def esbeltez_perfil_limite_compressao(self):
-        return 0.15 * self.area_aco() / self.material_aco_estrutural.fy
+        return 0.15 * self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy
 
     @property
     def esbeltez_perfil_residual_compressao(self):
-        return 0.19 * self.area_aco() / self.material_aco_estrutural.fy
+        return 0.19 * self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy
 
     @property
     def esbeltez_perfil_limite_flexao(self):
-        return 0.09 * self.area_aco() / self.material_aco_estrutural.fy
+        return 0.09 * self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy
 
     @property
     def esbeltez_perfil_residual_flexao(self):
-        return 0.31 * self.area_aco() / self.material_aco_estrutural.fy
+        return 0.31 * self.material_aco_estrutural.modulo_elasticidade / self.material_aco_estrutural.fy
     
     
     @property
@@ -247,29 +253,113 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     
     
     # Modulo resistente plástico
-
-    # def modulo_resistente_plastico_aco_x(self):
-    #     pass
-
-    # def modulo_resistente_plastico_concreto_x(self):
-    #     pass
-
-    # def modulo_resistente_plastico_armadura_x(self):
-    #     pass
-
-    # def modulo_resistente_plastico_aco_y(self):
-    #     pass
-
-    # def modulo_resistente_plastico_concreto_y(self):
-    #     pass
-
-    # def modulo_resistente_plastico_armadura_y(self):
-    #     pass
-
-
     
+    # eixo xx
+    @property
+    def modulo_resistente_plastico_aco_x(self):
+        return (1 / 6) * ((self.diametro_tubo ** 3) - (self.diametro_interno ** 3))
+
+    @property
+    def modulo_resistente_plastico_armadura_x(self):
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+        return sum( abs((np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) * np.sin(n *self.theta_armadura) * self.raio_armadura) for n in range(0,self.numero_armadura_longitudinal))
+    
+    @property
+    def modulo_resistente_plastico_concreto_x(self):
+        return ((self.diametro_interno ** 3) / 4) - (2 / 3) * (((self.diametro_tubo / 2) - self.espessura_tubo) ** 3) - self.modulo_resistente_plastico_armadura_x
+
+    # eixo yy
+
+    @property
+    def modulo_resistente_plastico_aco_y(self):
+        return (1 / 6) * ((self.diametro_tubo ** 3) - (self.diametro_interno ** 3))
+
+    @property
+    def modulo_resistente_plastico_armadura_y(self):
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+        return sum( abs((np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) * np.cos(n *self.theta_armadura) * self.raio_armadura) for n in range(0,self.numero_armadura_longitudinal))
+
+    @property
+    def modulo_resistente_plastico_concreto_y(self):
+        return ((self.diametro_interno ** 3) / 4) - (2 / 3) * (((self.diametro_tubo / 2) - self.espessura_tubo) ** 3) - self.modulo_resistente_plastico_armadura_y    
 
 
+    # propriedades da linha neutra plastica
+
+    def _propriedades_linha_neutra_plastica_xx(self):
+        Asn = 0
+
+        if self.numero_armadura_longitudinal == 0:
+
+            hn =((self.area_concreto() * self.fcd1 ) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
+
+            return hn, Asn
+
+        for i in range(5):
+
+            hn =((self.area_concreto() * self.fcd1 - Asn * (2 * self.material_armadura.resistencia_design - self.fcd1)) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
+
+            Asn1 = sum((np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) for n in range(0,self.numero_armadura_longitudinal) if abs(np.sin(n * self.theta_armadura) * self.raio_armadura) <= hn)
+
+            if abs(Asn1 - Asn) < 0.1:
+                return hn, Asn1
+
+            Asn = Asn1
+        return hn, Asn
+    
+    def _propriedades_linha_neutra_plastica_yy(self):
+        Asn = 0
+
+        if self.numero_armadura_longitudinal == 0:
+
+            hn =((self.area_concreto() * self.fcd1) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
+
+            return hn, Asn
+
+        for i in range(5):
+
+            hn =((self.area_concreto() * self.fcd1 - Asn * (2 * self.material_armadura.resistencia_design - self.fcd1)) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
+
+            Asn1 = sum((np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) for n in range(0,self.numero_armadura_longitudinal) if abs(np.cos(n * self.theta_armadura) * self.raio_armadura) <= hn)
+
+            if abs(Asn1 - Asn) < 0.1:
+                return hn, Asn1
+
+            Asn = Asn1
+        return hn, Asn
+
+
+    @property   
+    def modulo_resistente_plastico_armadura_x_lnp(self):
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+
+        return sum((np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) * abs(np.sin(n * self.theta_armadura) * self.raio_armadura) for n in range(0,self.numero_armadura_longitudinal) if abs(np.sin(n * self.theta_armadura) * self.raio_armadura) <= self.linha_neutra_plastica_xx)
+
+    @property   
+    def modulo_resistente_plastico_armadura_y_lnp(self):
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+
+        return sum((np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) * abs(np.cos(n * self.theta_armadura) * self.raio_armadura) for n in range(0,self.numero_armadura_longitudinal) if abs(np.cos(n * self.theta_armadura) * self.raio_armadura) <= self.linha_neutra_plastica_yy)
+
+    @property   
+    def modulo_resistente_plastico_concreto_x_lnp(self):
+        return self.diametro_interno * (self.linha_neutra_plastica_xx ** 2) - self.modulo_resistente_plastico_armadura_x_lnp
+
+    @property   
+    def modulo_resistente_plastico_concreto_y_lnp(self):
+        return self.diametro_interno * (self.linha_neutra_plastica_yy ** 2) - self.modulo_resistente_plastico_armadura_y_lnp
+
+    @property   
+    def modulo_resistente_plastico_aco_x_lnp(self):
+        return self.diametro_tubo * (self.linha_neutra_plastica_xx ** 2) - self.modulo_resistente_plastico_concreto_x_lnp - self.modulo_resistente_plastico_armadura_x_lnp
+
+    @property
+    def modulo_resistente_plastico_aco_y_lnp(self):
+        return self.diametro_tubo * (self.linha_neutra_plastica_yy ** 2) - self.modulo_resistente_plastico_concreto_y_lnp - self.modulo_resistente_plastico_armadura_y_lnp
 
 
 
@@ -289,5 +379,37 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
             return self.area_armadura() * self.fcd1 * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
         else:
             return 0.0
+
+
+    # --- Capacidades axiais considerando esbeltez local ---
+
+    def capacidade_axial_resistente_secao(self):
+
+        Nyrd = (self.material_aco_estrutural.fy * self.area_aco()) + 0.7 * self.material_concreto.fck * (self.area_concreto() + self.area_armadura() * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial))
+
+        sigma_cr = 0.72 * self.material_aco_estrutural.fy / ((self.esbeltez_perfil * self.material_aco_estrutural.fy / self.material_aco_estrutural.modulo_elasticidade) ** 0.2)
+
+        match self.esbeltez_compressao:
+            case Secao.COMPACTO:
+                return self.capacidade_axial_plastico
+
+            case Secao.NAO_COMPACTO:
+                termo1 = self.capacidade_axial_plastico - Nyrd
+
+                termo2 = (( self.esbeltez_perfil - self.esbeltez_perfil_limite_compressao ) / ( self.esbeltez_perfil_residual_compressao - self.esbeltez_perfil_limite_compressao ) ** 2)
+
+                return (self.capacidade_axial_plastico - (termo1)*(termo2))
+
+            case Secao.ESBELTO:
+                return (sigma_cr * self.area_aco()) + 0.7 * self.material_concreto.fck * (self.area_concreto() + self.area_armadura() * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial))
+
+            case _:
+                raise ValueError("Seção não suportada")
+
+
+
+    
+    # --- Capacidades de flexão --- 
+
         
 
