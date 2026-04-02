@@ -117,6 +117,17 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     def fcd1(self):
         return self.material_concreto.fcd * 0.85 * 1
 
+    @property
+    def alpha_c(self):
+        result = min(0.9,(
+            0.45 + 3*(
+                (self.area_aco + self.area_armadura) 
+                / (self.area_aco + self.area_armadura + self.area_concreto)
+            )
+            )
+        )
+     
+        return result
 
     # --- Informações Geométricas --- 
 

@@ -109,6 +109,18 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     @property
     def fcd1(self):
         return self.material_concreto.fcd * 0.95 * 1
+    
+    @property
+    def alpha_c(self):
+        result = min(0.9,(
+            0.45 + 3*(
+                (self.area_aco + self.area_armadura) 
+                / (self.area_aco + self.area_armadura + self.area_concreto)
+            )
+            )
+        )
+     
+        return result
 
 
     # --- Informações Geométricas
@@ -383,25 +395,78 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
     # --- Capacidades axiais considerando esbeltez local ---
 
-    def capacidade_axial_resistente_secao(self):
+    def capacidade_axial_resistente_secao_nominal(self):
 
-        Nyrd = (self.material_aco_estrutural.fy * self.area_aco()) + 0.7 * self.material_concreto.fck * (self.area_concreto() + self.area_armadura() * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial))
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
 
-        sigma_cr = 0.72 * self.material_aco_estrutural.fy / ((self.esbeltez_perfil * self.material_aco_estrutural.fy / self.material_aco_estrutural.modulo_elasticidade) ** 0.2)
-
+        
         match self.esbeltez_compressao:
             case Secao.COMPACTO:
                 return self.capacidade_axial_plastico
 
             case Secao.NAO_COMPACTO:
+
+                Nyrd = ((self.material_aco_estrutural.fy * self.area_aco()) 
+                + 0.7 * self.material_concreto.fck * (self.area_concreto() + self.area_armadura() 
+                * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
+
                 termo1 = self.capacidade_axial_plastico - Nyrd
 
-                termo2 = (( self.esbeltez_perfil - self.esbeltez_perfil_limite_compressao ) / ( self.esbeltez_perfil_residual_compressao - self.esbeltez_perfil_limite_compressao ) ** 2)
+                termo2 = (( self.esbeltez_perfil - self.esbeltez_perfil_limite_compressao ) 
+                          / ( self.esbeltez_perfil_residual_compressao - self.esbeltez_perfil_limite_compressao ) ** 2)
 
                 return (self.capacidade_axial_plastico - (termo1)*(termo2))
 
             case Secao.ESBELTO:
-                return (sigma_cr * self.area_aco()) + 0.7 * self.material_concreto.fck * (self.area_concreto() + self.area_armadura() * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial))
+                
+                sigma_cr = (0.72 * self.material_aco_estrutural.fy 
+                    / ((self.esbeltez_perfil * self.material_aco_estrutural.fy 
+                        / self.material_aco_estrutural.modulo_elasticidade) ** 0.2))
+
+                return ((sigma_cr * self.area_aco()) 
+                        + 0.7 * self.material_concreto.fck 
+                        * (self.area_concreto() + self.area_armadura() 
+                            * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
+
+            case _:
+                raise ValueError("Seção não suportada")
+
+    def capacidade_axial_resistente_secao_design(self):
+
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        
+        match self.esbeltez_compressao:
+            case Secao.COMPACTO:
+                return self.capacidade_axial_plastico_design
+
+            case Secao.NAO_COMPACTO:
+
+                Nyrd = ((self.material_aco_estrutural.resistencia_design * self.area_aco()) 
+                + 0.7 * self.material_concreto.fcd * (self.area_concreto() + self.area_armadura() 
+                * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
+
+                termo1 = self.capacidade_axial_plastico_design - Nyrd
+
+                termo2 = (( self.esbeltez_perfil - self.esbeltez_perfil_limite_compressao ) 
+                          / ( self.esbeltez_perfil_residual_compressao - self.esbeltez_perfil_limite_compressao ) ** 2)
+
+                return (self.capacidade_axial_plastico_design - (termo1)*(termo2))
+
+            case Secao.ESBELTO:
+                
+                sigma_cr = (0.72 * self.material_aco_estrutural.resistencia_design 
+                    / ((self.esbeltez_perfil * self.material_aco_estrutural.resistencia_design 
+                        / self.material_aco_estrutural.modulo_elasticidade) ** 0.2))
+
+                return ((sigma_cr * self.area_aco()) 
+                        + 0.7 * self.material_concreto.fcd 
+                        * (self.area_concreto() + self.area_armadura() 
+                            * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
 
             case _:
                 raise ValueError("Seção não suportada")
@@ -411,5 +476,151 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     
     # --- Capacidades de flexão --- 
 
-        
+    def capacidade_flexao_resistente_secao_nominal_xx(self):        
 
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        Mpl = self.momento_resistente_plastico_total_xx
+        
+        match self.esbeltez_flexao:
+            case Secao.COMPACTO:
+
+                Mrd = Mpl
+
+                return Mrd
+
+            case Secao.NAO_COMPACTO:
+
+                # Merd = 1
+
+                # termo1 = ((self.esbeltez_flexao - self.esbeltez_perfil_limite_flexao)
+                #           / (self.esbeltez_perfil_residual_flexao-self.esbeltez_perfil_limite_flexao))
+
+                # Mrd = Mpl - (Mpl-Merd) * termo1
+
+                # return Mrd
+                return ("Pilar não-compacto à flexão - Não implementado")
+
+            case Secao.ESBELTO:
+                
+                # Mrd = ?
+
+                # return Mrd
+                return ("Pilar esbelto à flexão - Não implementado")
+
+            case _:
+                raise ValueError("Seção não suportada")
+
+    def capacidade_flexao_resistente_secao_nominal_yy(self):        
+
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        Mpl = self.momento_resistente_plastico_total_yy
+        
+        match self.esbeltez_flexao:
+            case Secao.COMPACTO:
+
+                Mrd = Mpl
+
+                return Mrd
+
+            case Secao.NAO_COMPACTO:
+
+                # Merd = 1
+
+                # termo1 = ((self.esbeltez_flexao - self.esbeltez_perfil_limite_flexao)
+                #           / (self.esbeltez_perfil_residual_flexao-self.esbeltez_perfil_limite_flexao))
+
+                # Mrd = Mpl - (Mpl-Merd) * termo1
+
+                # return Mrd
+                return ("Pilar não-compacto à flexão - Não implementado")
+
+            case Secao.ESBELTO:
+                
+                # Mrd = ?
+
+                # return Mrd
+                return ("Pilar esbelto à flexão - Não implementado")
+
+            case _:
+                raise ValueError("Seção não suportada")
+
+
+    def capacidade_flexao_resistente_secao_design_xx(self):        
+
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        Mpl = self.momento_resistente_plastico_total_design_xx
+        
+        match self.esbeltez_flexao:
+            case Secao.COMPACTO:
+
+                Mrd = Mpl
+
+                return Mrd
+
+            case Secao.NAO_COMPACTO:
+
+                # Merd = 1
+
+                # termo1 = ((self.esbeltez_flexao - self.esbeltez_perfil_limite_flexao)
+                #           / (self.esbeltez_perfil_residual_flexao-self.esbeltez_perfil_limite_flexao))
+
+                # Mrd = Mpl - (Mpl-Merd) * termo1
+
+                # return Mrd
+                return ("Pilar não-compacto à flexão - Não implementado")
+
+            case Secao.ESBELTO:
+                
+                # Mrd = ?
+
+                # return Mrd
+                return ("Pilar esbelto à flexão - Não implementado")
+
+            case _:
+                raise ValueError("Seção não suportada")
+
+    def capacidade_flexao_resistente_secao_design_yy(self):        
+
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        Mpl = self.momento_resistente_plastico_total_design_yy
+        
+        match self.esbeltez_flexao:
+            case Secao.COMPACTO:
+
+                Mrd = Mpl
+
+                return Mrd
+
+            case Secao.NAO_COMPACTO:
+
+                # Merd = 1
+
+                # termo1 = ((self.esbeltez_flexao - self.esbeltez_perfil_limite_flexao)
+                #           / (self.esbeltez_perfil_residual_flexao-self.esbeltez_perfil_limite_flexao))
+
+                # Mrd = Mpl - (Mpl-Merd) * termo1
+
+                # return Mrd
+                return ("Pilar não-compacto à flexão - Não implementado")
+
+            case Secao.ESBELTO:
+                
+                # Mrd = ?
+
+                # return Mrd
+                return ("Pilar esbelto à flexão - Não implementado")
+
+            case _:
+                raise ValueError("Seção não suportada")

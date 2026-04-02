@@ -276,6 +276,34 @@ class ObjetoPilarMisto(ABC):
     def modulo_resistente_plastico_armadura_y_lnp(self):
         pass
 
+    # -------------------------------
+    # Rijezas efetivas
+    # -------------------------------
+
+    # axial
+
+    @property
+    def rigidez_axial_aco(self):
+        return (self.area_aco * self.material_aco_estrutural.modulo_elasticidade)
+
+    @property
+    def rigidez_axial_concreto(self):
+        return (self.area_concreto * self.material_concreto.modulo_elasticidade_secante)
+    
+    @property
+    def rigidez_axial_armadura(self):
+        return (self.area_armadura * self.material_armadura.modulo_elasticidade)
+    
+    @property
+    def rigidez_axial_equivalente(self):
+        return (self.rigidez_axial_aco + self.rigidez_axial_armadura + self.rigidez_axial_concreto)
+    
+    # flexão
+
+    @property
+    @abstractmethod
+    def alpha_c(self):
+        pass
 
     # -------------------------------
     # CAPACIDADES RESISTENTES 
