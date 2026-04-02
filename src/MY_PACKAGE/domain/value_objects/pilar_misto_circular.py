@@ -20,10 +20,12 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     diametro_armadura_transversal: float
     espacamento_armadura_transversal: float
     cobrimento:float
+    comprimento_pilar_destravado: float
 
     def __init__(self,
             diametro_tubo:float,
             espessura_tubo:float,
+            comprimento_pilar_destravado: float,
             material_aco_estrutural:AcoEstrutural, 
             material_concreto: ConcretoNormal,
             material_armadura: AcoArmadura | None = None, # posso incluir algo como None, para quando não tiver armadura? 
@@ -46,7 +48,8 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
             numero_armadura_longitudinal,
             diametro_armadura_transversal,
             espacamento_armadura_transversal,
-            cobrimento
+            cobrimento,
+            comprimento_pilar_destravado
             )
         
         self._validate()
@@ -395,6 +398,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
     # --- Capacidades axiais considerando esbeltez local ---
 
+    @property
     def capacidade_axial_resistente_secao_nominal(self):
 
         """
@@ -433,6 +437,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
             case _:
                 raise ValueError("Seção não suportada")
 
+    @property
     def capacidade_axial_resistente_secao_design(self):
 
         """

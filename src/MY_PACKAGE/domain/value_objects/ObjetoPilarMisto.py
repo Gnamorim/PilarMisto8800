@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from math import pi
 
 from MY_PACKAGE.domain.value_objects.ObjetoConcreto import  ConcretoNormal
 from MY_PACKAGE.domain.value_objects.ObjetoAco import AcoEstrutural, AcoArmadura
@@ -15,7 +16,9 @@ class ObjetoPilarMisto(ABC):
             numero_armadura_longitudinal:int,
             diametro_armadura_transversal: float,
             espacamento_armadura_transversal: float,
-            cobrimento:float
+            cobrimento:float,
+            comprimento_pilar_destravado: float
+            
         ):
 
         self.material_aco_estrutural = material_aco_estrutural
@@ -26,6 +29,7 @@ class ObjetoPilarMisto(ABC):
         self.diametro_armadura_transversal = diametro_armadura_transversal
         self.espacamento_armadura_transversal = espacamento_armadura_transversal
         self.cobrimento = cobrimento
+        self.comprimento_pilar_destravado = comprimento_pilar_destravado
 
         
 
@@ -305,6 +309,24 @@ class ObjetoPilarMisto(ABC):
     def alpha_c(self):
         pass
 
+    @property
+    def rigidez_flexao_equivalente_x(self):
+        aco = (self.momento_inercia_aco_x * self.material_aco_estrutural.modulo_elasticidade)
+        armadura = (self.momento_inercia_armadura_x * self.material_armadura.modulo_elasticidade)
+        concreto = self.alpha_c * (self.momento_inercia_concreto_x * self.material_concreto.modulo_elasticidade_secante)
+
+        return (concreto + aco + armadura)
+    
+    @property
+    def rigidez_flexao_equivalente_y(self):
+        aco = (self.momento_inercia_aco_y * self.material_aco_estrutural.modulo_elasticidade)
+        armadura = (self.momento_inercia_armadura_y * self.material_armadura.modulo_elasticidade)
+        concreto = self.alpha_c * (self.momento_inercia_concreto_y * self.material_concreto.modulo_elasticidade_secante)
+
+        return (concreto + aco + armadura)
+    
+
+
     # -------------------------------
     # CAPACIDADES RESISTENTES 
     # -------------------------------
@@ -343,7 +365,27 @@ class ObjetoPilarMisto(ABC):
     
     def capacidade_axial_plastico_design(self):
         return (self.capacidade_axial_plastico_aco_design() + self.capacidade_axial_plastico_armadura_design() + self.capacidade_axial_plastico_concreto_design())
+    
+    @property
+    @abstractmethod
+    def capacidade_axial_resistente_secao_nominal(self):
+        pass
 
+    @property
+    @abstractmethod
+    def capacidade_axial_resistente_secao_design(self):
+        pass
+
+    @property
+    def carga_flambagem_elastica(self):
+        ne_x = ((pi ** 2) * self.rigidez_flexao_equivalente_x / (self.comprimento_pilar_destravado ** 2))
+        ne_y = ((pi ** 2) * self.rigidez_flexao_equivalente_y / (self.comprimento_pilar_destravado ** 2))
+
+        return min(ne_x, ne_y)
+
+    @property
+    def indice_esbeltez_reduzido(self):
+        pass
 
 
     # --- Capacidades de Flexão ---

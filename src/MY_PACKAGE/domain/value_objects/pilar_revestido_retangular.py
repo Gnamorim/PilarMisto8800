@@ -23,6 +23,7 @@ class PilarRevestido(ObjetoPilarMisto):
     diametro_armadura_transversal: float
     espacamento_armadura_transversal: int
     cobrimento:float
+    comprimento_pilar_destravado: float
 
     def __init__(self,
             altura_concreto:float,
@@ -33,6 +34,7 @@ class PilarRevestido(ObjetoPilarMisto):
             espessura_alma:float,
             cx: float, # não tenho nomenclatura adequada
             cy: float, # não tenho nomenclatura adequada - ver imagem M1 da norma
+            comprimento_pilar_destravado: float,
 
             material_aco_estrutural:AcoEstrutural,
             material_concreto: ConcretoNormal,
@@ -62,7 +64,8 @@ class PilarRevestido(ObjetoPilarMisto):
             numero_armadura_longitudinal,
             diametro_armadura_transversal,
             espacamento_armadura_transversal,
-            cobrimento
+            cobrimento,
+            comprimento_pilar_destravado
             )
         
         self._validate()

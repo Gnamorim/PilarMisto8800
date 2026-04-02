@@ -20,12 +20,14 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     diametro_armadura_transversal: float
     espacamento_armadura_transversal: float
     cobrimento:float
+    comprimento_pilar_destravado: float
 
     def __init__(self,
             altura_tubo:float,
             largura_tubo: float,
             espessura_tubo:float,
-            material_aco_estrutural:AcoEstrutural, 
+            comprimento_pilar_destravado: float,
+            material_aco_estrutural:AcoEstrutural,
             material_concreto: ConcretoNormal,
             material_armadura: AcoArmadura | None = None,
             diametro_armadura_longitudinal:float = 0.0,
@@ -47,7 +49,8 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
             numero_armadura_longitudinal,
             diametro_armadura_transversal,
             espacamento_armadura_transversal,
-            cobrimento
+            cobrimento,
+            comprimento_pilar_destravado
             )
         
         self._validate()
