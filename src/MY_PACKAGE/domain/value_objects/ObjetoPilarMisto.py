@@ -163,6 +163,11 @@ class ObjetoPilarMisto(ABC):
 
         if not (0.1 <= fator_contribuicao <= 0.9):
             raise ValueError("fator de contribuição fora do limite normativo")
+        
+        # --- esbeltez reduzida inferior a 2.0 ---
+
+        if self.indice_esbeltez_reduzido > 2.0:
+            raise ValueError("Esbeltez reduzida do pilar esta fora do limite normativo")
 
 
         
@@ -385,8 +390,25 @@ class ObjetoPilarMisto(ABC):
 
     @property
     def indice_esbeltez_reduzido(self):
-        pass
+        
+        return ((self.capacidade_axial_resistente_secao_nominal / self.carga_flambagem_elastica) ** 0.5)
+    
+    @property
+    def indice_esbeltez_reduzido_limite(self):
+        return (
+            (90 / pi) * ((self.capacidade_axial_resistente_secao_nominal / self.rigidez_axial_equivalente) ** 0.5)
+        )
 
+    @property
+    def incluir_momento_adicional(self):
+        """
+        Confere se é necessario incluir momento adicional devido a efeitos de fluencia e retração (Item M.3.3)
+        """
+
+        if self.indice_esbeltez_reduzido <= self.indice_esbeltez_reduzido_limite:
+            return False
+        else:
+            return True
 
     # --- Capacidades de Flexão ---
     # nominal
