@@ -54,14 +54,17 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
         
         self._validate()
 
+        # Deve ser garantido que todas as equações necessárias para _limite_escopo sejam atendidas
         self._limite_escopo()
-        
-        hnz, Asnz = self._propriedades_linha_neutra_plastica_xx()
-        hny, Asny = self._propriedades_linha_neutra_plastica_yy()
-        self.linha_neutra_plastica_xx = hnz
-        self.area_linha_neutra_plastica_xx = Asnz
-        self.linha_neutra_plastica_yy = hny
-        self.area_linha_neutra_plastica_yy = Asny
+
+        # estas informações só são necessárias para flexão, não devem ser um problema        
+        self.linha_neutra_plastica_xx, self.area_linha_neutra_plastica_xx = (
+            self._propriedades_linha_neutra_plastica_xx()
+        )
+
+        self.linha_neutra_plastica_yy, self.area_linha_neutra_plastica_yy = (
+            self._propriedades_linha_neutra_plastica_yy()
+        )
 
 
     # -----------------------------------------------
