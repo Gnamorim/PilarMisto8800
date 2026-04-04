@@ -409,6 +409,23 @@ class ObjetoPilarMisto(ABC):
             return False
         else:
             return True
+        
+    @property
+    def fator_reducao(self):
+        if self.indice_esbeltez_reduzido <= 1.5:
+            result = 0.68 ** (self.indice_esbeltez_reduzido ** 2)
+        else:
+            result = (0.877 / (self.indice_esbeltez_reduzido ** 2))
+
+        return result
+    
+    @property
+    def capacidade_axial_resistente_pilar_nominal(self):
+        return (self.fator_reducao * self.capacidade_axial_resistente_secao_nominal)
+    
+    @property
+    def capacidade_axial_resistente_pilar_design(self):
+        return (self.fator_reducao * self.capacidade_axial_resistente_secao_design)
 
     # --- Capacidades de Flexão ---
     # nominal
