@@ -343,9 +343,12 @@ class ObjetoPilarMisto(ABC):
         """
         Calcula a rigidez equivalente a flexão (EI)e em relação ao eixo X
         """
-        aco = (self.momento_inercia_aco_x * self.material_aco_estrutural.modulo_elasticidade)
-        armadura = (self.momento_inercia_armadura_x * self.material_armadura.modulo_elasticidade)
-        concreto = self.alpha_c * (self.momento_inercia_concreto_x * self.material_concreto.modulo_elasticidade_secante)
+        aco = (self.momento_inercia_aco_x() * self.material_aco_estrutural.modulo_elasticidade)
+        if self.material_armadura is not None:
+            armadura = (self.momento_inercia_armadura_x() * self.material_armadura.modulo_elasticidade)
+        else:
+            armadura = 0
+        concreto = self.alpha_c * (self.momento_inercia_concreto_x() * self.material_concreto.modulo_elasticidade_secante)
 
         return (concreto + aco + armadura)
     
@@ -354,9 +357,12 @@ class ObjetoPilarMisto(ABC):
         """
         Calcula a rigidez equivalente a flexão (EI)e em relação ao eixo Y
         """
-        aco = (self.momento_inercia_aco_y * self.material_aco_estrutural.modulo_elasticidade)
-        armadura = (self.momento_inercia_armadura_y * self.material_armadura.modulo_elasticidade)
-        concreto = self.alpha_c * (self.momento_inercia_concreto_y * self.material_concreto.modulo_elasticidade_secante)
+        aco = (self.momento_inercia_aco_y() * self.material_aco_estrutural.modulo_elasticidade)
+        if self.material_armadura is not None:
+            armadura = (self.momento_inercia_armadura_y() * self.material_armadura.modulo_elasticidade)
+        else: 
+            armadura = 0
+        concreto = self.alpha_c * (self.momento_inercia_concreto_y() * self.material_concreto.modulo_elasticidade_secante)
 
         return (concreto + aco + armadura)
     

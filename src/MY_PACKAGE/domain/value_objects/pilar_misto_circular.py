@@ -120,8 +120,8 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     def alpha_c(self):
         result = min(0.9,(
             0.45 + 3*(
-                (self.area_aco + self.area_armadura) 
-                / (self.area_aco + self.area_armadura + self.area_concreto)
+                (self.area_aco() + self.area_armadura()) 
+                / (self.area_aco() + self.area_armadura() + self.area_concreto())
             )
             )
         )
@@ -414,7 +414,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
         
         match self.esbeltez_compressao:
             case Secao.COMPACTO:
-                return self.capacidade_axial_plastico
+                return self.capacidade_axial_plastico()
 
             case Secao.NAO_COMPACTO:
 
@@ -422,12 +422,12 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                 + 0.7 * self.material_concreto.fck * (self.area_concreto() + self.area_armadura() 
                 * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
 
-                termo1 = self.capacidade_axial_plastico - Nyrd
+                termo1 = self.capacidade_axial_plastico() - Nyrd
 
                 termo2 = (( self.esbeltez_perfil - self.esbeltez_perfil_limite_compressao ) 
                           / ( self.esbeltez_perfil_residual_compressao - self.esbeltez_perfil_limite_compressao ) ** 2)
 
-                return (self.capacidade_axial_plastico - (termo1)*(termo2))
+                return (self.capacidade_axial_plastico() - (termo1)*(termo2))
 
             case Secao.ESBELTO:
                 
@@ -453,7 +453,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
         
         match self.esbeltez_compressao:
             case Secao.COMPACTO:
-                return self.capacidade_axial_plastico_design
+                return self.capacidade_axial_plastico_design()
 
             case Secao.NAO_COMPACTO:
 
@@ -461,12 +461,12 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                 + 0.7 * self.material_concreto.fcd * (self.area_concreto() + self.area_armadura() 
                 * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
 
-                termo1 = self.capacidade_axial_plastico_design - Nyrd
+                termo1 = self.capacidade_axial_plastico_design() - Nyrd
 
                 termo2 = (( self.esbeltez_perfil - self.esbeltez_perfil_limite_compressao ) 
                           / ( self.esbeltez_perfil_residual_compressao - self.esbeltez_perfil_limite_compressao ) ** 2)
 
-                return (self.capacidade_axial_plastico_design - (termo1)*(termo2))
+                return (self.capacidade_axial_plastico_design() - (termo1)*(termo2))
 
             case Secao.ESBELTO:
                 
@@ -487,6 +487,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     
     # --- Capacidades de flexão --- 
 
+    @property
     def capacidade_flexao_resistente_secao_nominal_xx(self):        
 
         """
@@ -524,6 +525,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
             case _:
                 raise ValueError("Seção não suportada")
 
+    @property
     def capacidade_flexao_resistente_secao_nominal_yy(self):        
 
         """
@@ -562,6 +564,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                 raise ValueError("Seção não suportada")
 
 
+    @property
     def capacidade_flexao_resistente_secao_design_xx(self):        
 
         """
@@ -599,6 +602,7 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
             case _:
                 raise ValueError("Seção não suportada")
 
+    @property
     def capacidade_flexao_resistente_secao_design_yy(self):        
 
         """

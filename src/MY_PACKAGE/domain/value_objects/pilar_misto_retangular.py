@@ -124,8 +124,8 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     def alpha_c(self):
         result = min(0.9,(
             0.45 + 3*(
-                (self.area_aco + self.area_armadura) 
-                / (self.area_aco + self.area_armadura + self.area_concreto)
+                (self.area_aco() + self.area_armadura()) 
+                / (self.area_aco() + self.area_armadura() + self.area_concreto())
             )
             )
         )

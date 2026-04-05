@@ -36,7 +36,8 @@ class TestValidacaoCircular:
             espessura_tubo=10,
             material_aco_estrutural=aco_estrutural,
             material_concreto=concreto,
-            material_armadura=None
+            material_armadura=None,
+            comprimento_pilar_destravado= 3000
         )
 
         assert pilar.material_armadura is None
@@ -55,7 +56,8 @@ class TestValidacaoCircular:
             numero_armadura_longitudinal=6,
             diametro_armadura_transversal=8,
             espacamento_armadura_transversal=150,
-            cobrimento=30
+            cobrimento=30,
+            comprimento_pilar_destravado= 3000
         )
 
         assert pilar.material_armadura is not None
@@ -72,7 +74,8 @@ class TestValidacaoCircular:
                 diametro_tubo="300",
                 espessura_tubo=10,
                 material_aco_estrutural=aco_estrutural,
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -82,7 +85,8 @@ class TestValidacaoCircular:
                 diametro_tubo=300,
                 espessura_tubo=10,
                 material_aco_estrutural="aco",
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -96,7 +100,8 @@ class TestValidacaoCircular:
                 diametro_tubo=300,
                 espessura_tubo=200,
                 material_aco_estrutural=aco_estrutural,
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -106,7 +111,8 @@ class TestValidacaoCircular:
                 diametro_tubo=-300,
                 espessura_tubo=10,
                 material_aco_estrutural=aco_estrutural,
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -126,7 +132,8 @@ class TestValidacaoCircular:
                 numero_armadura_longitudinal=6,
                 diametro_armadura_transversal=8,
                 espacamento_armadura_transversal=150,
-                cobrimento=30
+                cobrimento=30,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -138,7 +145,8 @@ class TestValidacaoCircular:
                 material_aco_estrutural=aco_estrutural,
                 material_concreto=concreto,
                 material_armadura=None,
-                diametro_armadura_longitudinal=16
+                diametro_armadura_longitudinal=16,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -158,7 +166,8 @@ class TestValidacaoCircular:
                 numero_armadura_longitudinal=4,
                 diametro_armadura_transversal=8,
                 espacamento_armadura_transversal=150,
-                cobrimento=30
+                cobrimento=30,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -174,7 +183,8 @@ class TestValidacaoCircular:
                 numero_armadura_longitudinal=4,
                 diametro_armadura_transversal=8,
                 espacamento_armadura_transversal=150,
-                cobrimento=30
+                cobrimento=30,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -190,7 +200,8 @@ class TestValidacaoCircular:
                 numero_armadura_longitudinal=31,
                 diametro_armadura_transversal=8,
                 espacamento_armadura_transversal=150,
-                cobrimento=30
+                cobrimento=30,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -206,7 +217,8 @@ class TestValidacaoCircular:
                 numero_armadura_longitudinal=4,
                 diametro_armadura_transversal=60,
                 espacamento_armadura_transversal=150,
-                cobrimento=30
+                cobrimento=30,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -222,7 +234,8 @@ class TestValidacaoCircular:
                 numero_armadura_longitudinal=4,
                 diametro_armadura_transversal=4,
                 espacamento_armadura_transversal=150,
-                cobrimento=30
+                cobrimento=30,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -238,7 +251,8 @@ class TestValidacaoCircular:
                 numero_armadura_longitudinal=4,
                 diametro_armadura_transversal=8,
                 espacamento_armadura_transversal=1500,
-                cobrimento=30
+                cobrimento=30,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -254,7 +268,8 @@ class TestValidacaoCircular:
                 numero_armadura_longitudinal=4,
                 diametro_armadura_transversal=8,
                 espacamento_armadura_transversal=150,
-                cobrimento=-10
+                cobrimento=-10,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -264,7 +279,8 @@ class TestValidacaoCircular:
                 diametro_tubo=True,
                 espessura_tubo=10,
                 material_aco_estrutural=aco_estrutural,
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -280,7 +296,8 @@ class TestLimiteEscopo:
                 diametro_tubo=300,
                 espessura_tubo=0.1,
                 material_aco_estrutural=aco_estrutural,
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -291,7 +308,8 @@ class TestLimiteEscopo:
                 diametro_tubo=300,
                 espessura_tubo=1,
                 material_aco_estrutural=aco_estrutural,
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -302,7 +320,8 @@ class TestLimiteEscopo:
                 diametro_tubo=300,
                 espessura_tubo=50,
                 material_aco_estrutural=aco_estrutural,
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -312,7 +331,8 @@ class TestLimiteEscopo:
                 diametro_tubo=1000,
                 espessura_tubo=1,
                 material_aco_estrutural=aco_estrutural,
-                material_concreto=concreto
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
             )
 
 
@@ -327,7 +347,8 @@ class TestGeometrico:
             diametro_tubo=300,
             espessura_tubo=10,
             material_aco_estrutural=aco_estrutural,
-            material_concreto=concreto
+            material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
         )
 
         area = pilar.area_aco()
@@ -341,7 +362,8 @@ class TestGeometrico:
             diametro_tubo=300,
             espessura_tubo=10,
             material_aco_estrutural=aco_estrutural,
-            material_concreto=concreto
+            material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
         )
 
         pilar2 = PilarCircularPreenchido(
@@ -354,7 +376,8 @@ class TestGeometrico:
             numero_armadura_longitudinal=6,
             diametro_armadura_transversal=8,
             espacamento_armadura_transversal=150,
-            cobrimento=30
+            cobrimento=30,
+            comprimento_pilar_destravado= 3000
         )
 
         area = pilar.area_concreto()
@@ -378,7 +401,8 @@ class TestGeometrico:
             numero_armadura_longitudinal=4,
             diametro_armadura_transversal=8,
             espacamento_armadura_transversal=150,
-            cobrimento=30
+            cobrimento=30,
+            comprimento_pilar_destravado= 3000
         )
 
         area = pilar.area_armadura()
@@ -425,13 +449,15 @@ class TestPropriedadesMecanicas:
             numero_armadura_longitudinal=bar_number,
             diametro_armadura_transversal=stirrup,
             espacamento_armadura_transversal=150,
+            comprimento_pilar_destravado= 3000
              )
         
         pilar1 = PilarCircularPreenchido(
             diametro_tubo=tube_diameter,
             espessura_tubo= thickness,
             material_aco_estrutural=aco_estrutural,
-            material_concreto=concreto1
+            material_concreto=concreto1,
+            comprimento_pilar_destravado= 3000
         )
 
         tol = 1e-2
@@ -475,13 +501,15 @@ class TestPropriedadesMecanicas:
             numero_armadura_longitudinal=bar_number,
             diametro_armadura_transversal=stirrup,
             espacamento_armadura_transversal=150,
+            comprimento_pilar_destravado= 3000
              )
         
         pilar1 = PilarCircularPreenchido(
             diametro_tubo=tube_diameter,
             espessura_tubo= thickness,
             material_aco_estrutural=aco_estrutural,
-            material_concreto=concreto1
+            material_concreto=concreto1,
+            comprimento_pilar_destravado= 3000
             )
 
         tol = 1e-2
@@ -522,13 +550,15 @@ class TestPropriedadesMecanicas:
             numero_armadura_longitudinal=bar_number,
             diametro_armadura_transversal=stirrup,
             espacamento_armadura_transversal=150,
+            comprimento_pilar_destravado= 3000
              )
         
         pilar1 = PilarCircularPreenchido(
             diametro_tubo=tube_diameter,
             espessura_tubo= thickness,
             material_aco_estrutural=aco_estrutural,
-            material_concreto=concreto1
+            material_concreto=concreto1,
+            comprimento_pilar_destravado= 3000
             )
         tol = 1e-2
 

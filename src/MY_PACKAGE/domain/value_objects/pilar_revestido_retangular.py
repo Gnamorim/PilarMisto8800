@@ -135,8 +135,8 @@ class PilarRevestido(ObjetoPilarMisto):
     def alpha_c(self):
         result = min(0.7,(
             0.25 + 3*(
-                (self.area_aco + self.area_armadura) 
-                / (self.area_aco + self.area_armadura + self.area_concreto)
+                (self.area_aco() + self.area_armadura()) 
+                / (self.area_aco() + self.area_armadura() + self.area_concreto())
             )
             )
         )
