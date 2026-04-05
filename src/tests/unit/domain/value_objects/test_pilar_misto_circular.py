@@ -351,7 +351,7 @@ class TestGeometrico:
             comprimento_pilar_destravado= 3000
         )
 
-        area = pilar.area_aco()
+        area = pilar.area_aco
         esperado = (np.pi * (300**2 - 280**2)) / 4
 
         assert np.isclose(area, esperado)
@@ -380,10 +380,10 @@ class TestGeometrico:
             comprimento_pilar_destravado= 3000
         )
 
-        area = pilar.area_concreto()
+        area = pilar.area_concreto
         esperado = (np.pi * (280**2)) / 4
 
-        area2 = pilar2.area_concreto()
+        area2 = pilar2.area_concreto
         esperado2 = ((np.pi * (280**2)) / 4) - (6 * ((np.pi * (16**2)) / 4))
 
         assert np.isclose(area, esperado)
@@ -405,10 +405,23 @@ class TestGeometrico:
             comprimento_pilar_destravado= 3000
         )
 
-        area = pilar.area_armadura()
+        area = pilar.area_armadura
         esperado = (np.pi * (16**2) * 4) / 4
 
         assert np.isclose(area, esperado)
+
+    def test_area_total_uses_property_api(self, concreto, aco_estrutural):
+        pilar = PilarCircularPreenchido(
+            diametro_tubo=300,
+            espessura_tubo=10,
+            material_aco_estrutural=aco_estrutural,
+            material_concreto=concreto,
+            comprimento_pilar_destravado=3000
+        )
+
+        esperado = pilar.area_aco + pilar.area_concreto + pilar.area_armadura
+
+        assert np.isclose(pilar.area_total(), esperado)
 
 
 

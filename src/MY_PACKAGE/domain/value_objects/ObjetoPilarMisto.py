@@ -153,9 +153,9 @@ class ObjetoPilarMisto(ABC):
         """
         
         # --- area perfil >1% da area total ---
-        area_aco = self.area_aco()
-        area_concreto = self.area_concreto()
-        area_armadura = self.area_armadura() 
+        area_aco = self.area_aco
+        area_concreto = self.area_concreto
+        area_armadura = self.area_armadura 
 
         area_total = area_aco + area_concreto + area_armadura
 
@@ -186,14 +186,17 @@ class ObjetoPilarMisto(ABC):
 
     # area
      
+    @property
     @abstractmethod
     def area_aco(self):
         pass
 
+    @property
     @abstractmethod
     def area_concreto(self):
         pass
 
+    @property
     @abstractmethod
     def area_armadura(self):
         pass
@@ -202,30 +205,36 @@ class ObjetoPilarMisto(ABC):
         """
         Calcula a area total da seção tranversal do pilar
         """
-        return self.area_concreto() + self.area_aco() + self.area_armadura() 
+        return self.area_concreto + self.area_aco + self.area_armadura 
 
     # momento de inercia
 
+    @property
     @abstractmethod
     def momento_inercia_aco_x(self):
         pass
 
+    @property
     @abstractmethod
     def momento_inercia_concreto_x(self):
         pass
     
+    @property
     @abstractmethod
     def momento_inercia_armadura_x(self):
         pass
 
+    @property
     @abstractmethod
     def momento_inercia_aco_y(self):
         pass
 
+    @property
     @abstractmethod
     def momento_inercia_concreto_y(self):
         pass
     
+    @property
     @abstractmethod
     def momento_inercia_armadura_y(self):
         pass    
@@ -343,12 +352,12 @@ class ObjetoPilarMisto(ABC):
         """
         Calcula a rigidez equivalente a flexão (EI)e em relação ao eixo X
         """
-        aco = (self.momento_inercia_aco_x() * self.material_aco_estrutural.modulo_elasticidade)
+        aco = (self.momento_inercia_aco_x * self.material_aco_estrutural.modulo_elasticidade)
         if self.material_armadura is not None:
-            armadura = (self.momento_inercia_armadura_x() * self.material_armadura.modulo_elasticidade)
+            armadura = (self.momento_inercia_armadura_x * self.material_armadura.modulo_elasticidade)
         else:
             armadura = 0
-        concreto = self.alpha_c * (self.momento_inercia_concreto_x() * self.material_concreto.modulo_elasticidade_secante)
+        concreto = self.alpha_c * (self.momento_inercia_concreto_x * self.material_concreto.modulo_elasticidade_secante)
 
         return (concreto + aco + armadura)
     
@@ -357,12 +366,12 @@ class ObjetoPilarMisto(ABC):
         """
         Calcula a rigidez equivalente a flexão (EI)e em relação ao eixo Y
         """
-        aco = (self.momento_inercia_aco_y() * self.material_aco_estrutural.modulo_elasticidade)
+        aco = (self.momento_inercia_aco_y * self.material_aco_estrutural.modulo_elasticidade)
         if self.material_armadura is not None:
-            armadura = (self.momento_inercia_armadura_y() * self.material_armadura.modulo_elasticidade)
+            armadura = (self.momento_inercia_armadura_y * self.material_armadura.modulo_elasticidade)
         else: 
             armadura = 0
-        concreto = self.alpha_c * (self.momento_inercia_concreto_y() * self.material_concreto.modulo_elasticidade_secante)
+        concreto = self.alpha_c * (self.momento_inercia_concreto_y * self.material_concreto.modulo_elasticidade_secante)
 
         return (concreto + aco + armadura)
     
@@ -399,13 +408,13 @@ class ObjetoPilarMisto(ABC):
         """
         Calcula a capacidade axial plastica nominal do aço na seção transversal
         """
-        return self.area_aco() * self.material_aco_estrutural.fy
+        return self.area_aco * self.material_aco_estrutural.fy
     
     def capacidade_axial_plastico_aco_design(self):
         """
         Calcula a capacidade axial plastica de design do aço na seção transversal
         """
-        return self.area_aco() * self.material_aco_estrutural.resistencia_design
+        return self.area_aco * self.material_aco_estrutural.resistencia_design
 
 
     # concreto
@@ -413,13 +422,13 @@ class ObjetoPilarMisto(ABC):
         """
         Calcula a capacidade axial plastica nominal do concreto na seção transversal
         """
-        return self.area_concreto() * self.material_concreto.fck
+        return self.area_concreto * self.material_concreto.fck
     
     def capacidade_axial_plastico_concreto_design(self):
         """
         Calcula a capacidade axial plastica de design do concreto na seção transversal
         """
-        return self.area_concreto() * self.fcd1
+        return self.area_concreto * self.fcd1
     
 
     # seção transversal

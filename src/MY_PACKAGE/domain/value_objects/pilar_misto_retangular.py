@@ -124,8 +124,8 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     def alpha_c(self):
         result = min(0.9,(
             0.45 + 3*(
-                (self.area_aco() + self.area_armadura()) 
-                / (self.area_aco() + self.area_armadura() + self.area_concreto())
+                (self.area_aco + self.area_armadura) 
+                / (self.area_aco + self.area_armadura + self.area_concreto)
             )
             )
         )
@@ -140,14 +140,17 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
 
     # Areas 
 
+    @property
     def area_aco(self):
         return ( self.altura_tubo * self.largura_tubo - (( self.largura_tubo - 2 * self.espessura_tubo )*( self.altura_tubo - 2*self.espessura_tubo)))
     
+    @property
     def area_armadura(self):
         return ( ( np.pi * ( self.diametro_armadura_longitudinal ** 2 ) * self.numero_armadura_longitudinal ) / 4)
     
+    @property
     def area_concreto(self):
-        return ((( self.largura_tubo - 2 * self.espessura_tubo )*( self.altura_tubo - 2*self.espessura_tubo)) - self.area_armadura())
+        return ((( self.largura_tubo - 2 * self.espessura_tubo )*( self.altura_tubo - 2*self.espessura_tubo)) - self.area_armadura)
     
 
     # Esbeltez do perfil
@@ -269,12 +272,12 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     # Armadura
     def capacidade_axial_plastico_armadura(self):
         if self.material_armadura:
-            return self.area_armadura() * self.material_concreto.fck * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
+            return self.area_armadura * self.material_concreto.fck * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
         else:
             return 0.0
 
     def capacidade_axial_plastico_armadura_design(self):
         if self.material_armadura:
-            return self.area_armadura() * self.fcd1 * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
+            return self.area_armadura * self.fcd1 * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
         else:
             return 0.0

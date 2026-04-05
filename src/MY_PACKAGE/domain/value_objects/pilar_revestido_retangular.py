@@ -135,8 +135,8 @@ class PilarRevestido(ObjetoPilarMisto):
     def alpha_c(self):
         result = min(0.7,(
             0.25 + 3*(
-                (self.area_aco() + self.area_armadura()) 
-                / (self.area_aco() + self.area_armadura() + self.area_concreto())
+                (self.area_aco + self.area_armadura) 
+                / (self.area_aco + self.area_armadura + self.area_concreto)
             )
             )
         )
@@ -148,14 +148,17 @@ class PilarRevestido(ObjetoPilarMisto):
         return 2.4
 
     # --- Informações Geométricas --- 
+    @property
     def area_aco(self):
         return ( 2 * (self.largura_perfil * self.espessura_mesa) + ( self.espessura_alma * ( self.altura_perfil - 2 * self.espessura_mesa)))
                 
+    @property
     def area_armadura(self):
         return (( np.pi * ( self.diametro_armadura_longitudinal ** 2 ) * self.numero_armadura_longitudinal ) / 4)
     
+    @property
     def area_concreto(self):
-        return (( self.altura_concreto * self.largura_concreto ) - self.area_armadura() - self.area_aco())
+        return (( self.altura_concreto * self.largura_concreto ) - self.area_armadura - self.area_aco)
     
 
 
@@ -165,13 +168,13 @@ class PilarRevestido(ObjetoPilarMisto):
     # Armadura
     def capacidade_axial_plastico_armadura(self):
         if self.material_armadura:
-            return self.area_armadura() * self.material_armadura.fy
+            return self.area_armadura * self.material_armadura.fy
         else:
             return 0.0
 
     def capacidade_axial_plastico_armadura_design(self):
         if self.material_armadura:
-            return self.area_armadura() * self.material_armadura.resistencia_design
+            return self.area_armadura * self.material_armadura.resistencia_design
         else:
             return 0.0
         

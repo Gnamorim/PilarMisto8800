@@ -120,8 +120,8 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     def alpha_c(self):
         result = min(0.9,(
             0.45 + 3*(
-                (self.area_aco() + self.area_armadura()) 
-                / (self.area_aco() + self.area_armadura() + self.area_concreto())
+                (self.area_aco + self.area_armadura) 
+                / (self.area_aco + self.area_armadura + self.area_concreto)
             )
             )
         )
@@ -136,14 +136,17 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
     # Areas 
 
+    @property
     def area_aco(self):
         return ( ( np.pi * ( (self.diametro_tubo ** 2) - (self.diametro_interno ** 2 ) ) ) / 4)
     
+    @property
     def area_armadura(self):
         return ( ( np.pi * ( self.diametro_armadura_longitudinal ** 2 ) * self.numero_armadura_longitudinal ) / 4)
     
+    @property
     def area_concreto(self):
-        return ( ( np.pi * ( self.diametro_interno ** 2 ) ) / 4) - self.area_armadura()
+        return ( ( np.pi * ( self.diametro_interno ** 2 ) ) / 4) - self.area_armadura
     
 
     # Esbeltez do perfil
@@ -217,9 +220,11 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
     # Eixo x - Horizontal
     
+    @property
     def momento_inercia_aco_x(self):
         return ( np.pi / 64 ) * (( self.diametro_tubo ** 4 ) - ( self.diametro_interno ** 4 )) 
     
+    @property
     def momento_inercia_armadura_x(self):
         
         """
@@ -241,13 +246,16 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
         return iz_tot
     
+    @property
     def momento_inercia_concreto_x(self):
-        return ( ( np.pi * ( self.diametro_interno ** 4 ) ) / 64 ) - self.momento_inercia_armadura_x()
+        return ( ( np.pi * ( self.diametro_interno ** 4 ) ) / 64 ) - self.momento_inercia_armadura_x
 
    
+    @property
     def momento_inercia_aco_y(self):
         return ( np.pi / 64 ) * (( self.diametro_tubo ** 4 ) - ( self.diametro_interno ** 4 ))
     
+    @property
     def momento_inercia_armadura_y(self):
         """
         calcula o momento de inercia de armaduras em formato circular
@@ -269,8 +277,9 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
         return iz_tot   
 
     
+    @property
     def momento_inercia_concreto_y(self):
-        return ( ( np.pi * ( self.diametro_interno ** 4 ) ) / 64 ) - self.momento_inercia_armadura_y()
+        return ( ( np.pi * ( self.diametro_interno ** 4 ) ) / 64 ) - self.momento_inercia_armadura_y
     
     
     # Modulo resistente plástico
@@ -314,13 +323,13 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
         if self.numero_armadura_longitudinal == 0:
 
-            hn =((self.area_concreto() * self.fcd1 ) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
+            hn =((self.area_concreto * self.fcd1 ) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
 
             return hn, Asn
 
         for i in range(5):
 
-            hn =((self.area_concreto() * self.fcd1 - Asn * (2 * self.material_armadura.resistencia_design - self.fcd1)) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
+            hn =((self.area_concreto * self.fcd1 - Asn * (2 * self.material_armadura.resistencia_design - self.fcd1)) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
 
             Asn1 = sum((np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) for n in range(0,self.numero_armadura_longitudinal) if abs(np.sin(n * self.theta_armadura) * self.raio_armadura) <= hn)
 
@@ -335,13 +344,13 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
         if self.numero_armadura_longitudinal == 0:
 
-            hn =((self.area_concreto() * self.fcd1) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
+            hn =((self.area_concreto * self.fcd1) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
 
             return hn, Asn
 
         for i in range(5):
 
-            hn =((self.area_concreto() * self.fcd1 - Asn * (2 * self.material_armadura.resistencia_design - self.fcd1)) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
+            hn =((self.area_concreto * self.fcd1 - Asn * (2 * self.material_armadura.resistencia_design - self.fcd1)) / (2 * self.diametro_tubo * self.fcd1 + 4 * self.espessura_tubo * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1)))
 
             Asn1 = sum((np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) for n in range(0,self.numero_armadura_longitudinal) if abs(np.cos(n * self.theta_armadura) * self.raio_armadura) <= hn)
 
@@ -391,13 +400,13 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
     # Armadura
     def capacidade_axial_plastico_armadura(self):
         if self.material_armadura:
-            return self.area_armadura() * self.material_concreto.fck * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
+            return self.area_armadura * self.material_concreto.fck * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
         else:
             return 0.0
 
     def capacidade_axial_plastico_armadura_design(self):
         if self.material_armadura:
-            return self.area_armadura() * self.fcd1 * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
+            return self.area_armadura * self.fcd1 * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
         else:
             return 0.0
 
@@ -418,8 +427,8 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
             case Secao.NAO_COMPACTO:
 
-                Nyrd = ((self.material_aco_estrutural.fy * self.area_aco()) 
-                + 0.7 * self.material_concreto.fck * (self.area_concreto() + self.area_armadura() 
+                Nyrd = ((self.material_aco_estrutural.fy * self.area_aco) 
+                + 0.7 * self.material_concreto.fck * (self.area_concreto + self.area_armadura 
                 * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
 
                 termo1 = self.capacidade_axial_plastico() - Nyrd
@@ -435,9 +444,9 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                     / ((self.esbeltez_perfil * self.material_aco_estrutural.fy 
                         / self.material_aco_estrutural.modulo_elasticidade) ** 0.2))
 
-                return ((sigma_cr * self.area_aco()) 
+                return ((sigma_cr * self.area_aco) 
                         + 0.7 * self.material_concreto.fck 
-                        * (self.area_concreto() + self.area_armadura() 
+                        * (self.area_concreto + self.area_armadura 
                             * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
 
             case _:
@@ -457,8 +466,8 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
             case Secao.NAO_COMPACTO:
 
-                Nyrd = ((self.material_aco_estrutural.resistencia_design * self.area_aco()) 
-                + 0.7 * self.material_concreto.fcd * (self.area_concreto() + self.area_armadura() 
+                Nyrd = ((self.material_aco_estrutural.resistencia_design * self.area_aco) 
+                + 0.7 * self.material_concreto.fcd * (self.area_concreto + self.area_armadura 
                 * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
 
                 termo1 = self.capacidade_axial_plastico_design() - Nyrd
@@ -474,9 +483,9 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                     / ((self.esbeltez_perfil * self.material_aco_estrutural.resistencia_design 
                         / self.material_aco_estrutural.modulo_elasticidade) ** 0.2))
 
-                return ((sigma_cr * self.area_aco()) 
+                return ((sigma_cr * self.area_aco) 
                         + 0.7 * self.material_concreto.fcd 
-                        * (self.area_concreto() + self.area_armadura() 
+                        * (self.area_concreto + self.area_armadura 
                             * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
 
             case _:
