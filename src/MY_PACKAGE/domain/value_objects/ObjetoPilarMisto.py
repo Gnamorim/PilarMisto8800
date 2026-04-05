@@ -334,6 +334,11 @@ class ObjetoPilarMisto(ABC):
         pass
 
     @property
+    @abstractmethod
+    def coeficiente_fluencia(self):
+        pass
+
+    @property
     def rigidez_flexao_equivalente_x(self):
         """
         Calcula a rigidez equivalente a flexão (EI)e em relação ao eixo X
@@ -354,6 +359,16 @@ class ObjetoPilarMisto(ABC):
         concreto = self.alpha_c * (self.momento_inercia_concreto_y * self.material_concreto.modulo_elasticidade_secante)
 
         return (concreto + aco + armadura)
+    
+    @property
+    @abstractmethod
+    def esbeltez_compressao(self):
+        pass
+
+    @property
+    @abstractmethod
+    def esbeltez_flexao(self):
+        pass
     
 
 
@@ -427,13 +442,29 @@ class ObjetoPilarMisto(ABC):
     # --- Capacidade resistente do pilar ---
 
     @property
+    def _carga_flambagem_elastica_x(self):
+        """
+        Calcula a carga de flexão elastica para o eixo X
+        Ne = min(pi^2 * (EI)e,x / (L^2))
+        """
+        return ((pi ** 2) * self.rigidez_flexao_equivalente_x / (self.comprimento_pilar_destravado ** 2))
+    
+    @property
+    def _carga_flambagem_elastica_y(self):
+        """
+        Calcula a carga de flexão elastica para o eixo Y
+        Ne = min(pi^2 * (EI)e,y / (L^2))
+        """
+        return ((pi ** 2) * self.rigidez_flexao_equivalente_y / (self.comprimento_pilar_destravado ** 2))
+
+    @property
     def carga_flambagem_elastica(self):
         """
         Calcula a carga de flexão elastica para ambos os eixos, saindo com a menor
         Ne = min(pi^2 * (EI)e,i / (L^2))
         """
-        ne_x = ((pi ** 2) * self.rigidez_flexao_equivalente_x / (self.comprimento_pilar_destravado ** 2))
-        ne_y = ((pi ** 2) * self.rigidez_flexao_equivalente_y / (self.comprimento_pilar_destravado ** 2))
+        ne_x = self._carga_flambagem_elastica_x
+        ne_y = self._carga_flambagem_elastica_y
 
         return min(ne_x, ne_y)
 
@@ -456,7 +487,7 @@ class ObjetoPilarMisto(ABC):
         )
 
     @property
-    def incluir_momento_adicional(self):
+    def _incluir_momento_adicional(self):
         """
         Confere se é necessario incluir momento adicional devido a efeitos de fluencia e retração (Item M.3.3)
         """

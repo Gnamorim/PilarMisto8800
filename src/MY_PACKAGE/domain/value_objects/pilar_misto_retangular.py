@@ -131,6 +131,10 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
         )
      
         return result
+    
+    @property
+    def coeficiente_fluencia(self):
+        return 0.6
 
     # --- Informações Geométricas --- 
 

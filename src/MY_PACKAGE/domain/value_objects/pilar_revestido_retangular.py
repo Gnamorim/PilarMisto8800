@@ -142,6 +142,10 @@ class PilarRevestido(ObjetoPilarMisto):
         )
      
         return result
+    
+    @property
+    def coeficiente_fluencia(self):
+        return 2.4
 
     # --- Informações Geométricas --- 
     def area_aco(self):
