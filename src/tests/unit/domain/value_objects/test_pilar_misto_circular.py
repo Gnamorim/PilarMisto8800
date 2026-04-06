@@ -5,6 +5,7 @@ from math import isclose
 from MY_PACKAGE.domain.value_objects.pilar_misto_circular import PilarCircularPreenchido
 from MY_PACKAGE.domain.value_objects.ObjetoConcreto import ConcretoNormal
 from MY_PACKAGE.domain.value_objects.ObjetoAco import AcoEstrutural, AcoArmadura
+from MY_PACKAGE.domain.value_objects._classe_secao import Secao
 
 
 # -------------------------
@@ -104,6 +105,25 @@ class TestValidacaoCircular:
             comprimento_pilar_destravado= 3000
             )
 
+    def test_espessura_zero(self, concreto, aco_estrutural):
+        with pytest.raises(ValueError):
+            PilarCircularPreenchido(
+                diametro_tubo=300,
+                espessura_tubo=0,
+                material_aco_estrutural=aco_estrutural,
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
+            )
+
+    def test_diametro_interno_invalido(self, concreto, aco_estrutural):
+        with pytest.raises(ValueError):
+            PilarCircularPreenchido(
+                diametro_tubo=300,
+                espessura_tubo=150,
+                material_aco_estrutural=aco_estrutural,
+                material_concreto=concreto,
+            comprimento_pilar_destravado= 3000
+            )
 
     def test_diametro_negativo(self, concreto, aco_estrutural):
         with pytest.raises(ValueError):
@@ -581,3 +601,81 @@ class TestPropriedadesMecanicas:
         # considering cfst1
         assert isclose(pilar1.momento_resistente_plastico_total_design_yy, Mpl1, abs_tol=tol, rel_tol= tol)
         assert isclose(pilar1.momento_resistente_maximo_plastico_total_design_yy, Mmax1, abs_tol=tol, rel_tol= tol)
+
+    def test_resistencias_flexao_secao_compacta_retornam_valores_esperados(self, concreto, aco_estrutural):
+        """
+        Para seções compactas, as resistências à flexão já estão implementadas
+        e devem retornar os momentos plásticos calculados.
+        """
+        pilar = PilarCircularPreenchido(
+            diametro_tubo=300,
+            espessura_tubo=10,
+            material_aco_estrutural=aco_estrutural,
+            material_concreto=concreto,
+            comprimento_pilar_destravado=3000
+        )
+
+        assert pilar.capacidade_flexao_resistente_secao_nominal_xx == pilar.momento_resistente_plastico_total_xx
+        assert pilar.capacidade_flexao_resistente_secao_nominal_yy == pilar.momento_resistente_plastico_total_yy
+        assert pilar.capacidade_flexao_resistente_secao_design_xx == pilar.momento_resistente_plastico_total_design_xx
+        assert pilar.capacidade_flexao_resistente_secao_design_yy == pilar.momento_resistente_plastico_total_design_yy
+
+    @pytest.mark.parametrize(
+        "resistencia_flexao",
+        [
+            "capacidade_flexao_resistente_secao_nominal_xx",
+            "capacidade_flexao_resistente_secao_nominal_yy",
+            "capacidade_flexao_resistente_secao_design_xx",
+            "capacidade_flexao_resistente_secao_design_yy",
+        ],
+    )
+    def test_resistencias_flexao_secao_nao_compacta_lancam_not_implemented(
+        self, concreto, aco_estrutural, resistencia_flexao
+    ):
+        """
+        Para seções não compactas à flexão, as fórmulas ainda não estão
+        implementadas e a API deve falhar explicitamente com NotImplementedError.
+        """
+        pilar = PilarCircularPreenchido(
+            diametro_tubo=600,
+            espessura_tubo=9.5,
+            material_aco_estrutural=aco_estrutural,
+            material_concreto=concreto,
+            comprimento_pilar_destravado=3000
+        )
+
+        assert pilar.esbeltez_flexao == Secao.NAO_COMPACTO
+        with pytest.raises(NotImplementedError):
+            getattr(pilar, resistencia_flexao)
+
+    @pytest.mark.parametrize(
+        "resistencia_flexao",
+        [
+            "capacidade_flexao_resistente_secao_nominal_xx",
+            "capacidade_flexao_resistente_secao_nominal_yy",
+            "capacidade_flexao_resistente_secao_design_xx",
+            "capacidade_flexao_resistente_secao_design_yy",
+        ],
+    )
+    def test_resistencias_flexao_secao_esbelta_lancam_not_implemented(
+        self, monkeypatch, concreto, aco_estrutural, resistencia_flexao
+    ):
+        """
+        Para seções esbeltas à flexão, as fórmulas ainda não estão implementadas;
+        o monkeypatch força esse estado para testar o comportamento da API.
+        """
+        monkeypatch.setattr(
+            PilarCircularPreenchido,
+            "esbeltez_flexao",
+            property(lambda self: Secao.ESBELTO),
+        )
+        pilar = PilarCircularPreenchido(
+            diametro_tubo=300,
+            espessura_tubo=10,
+            material_aco_estrutural=aco_estrutural,
+            material_concreto=concreto,
+            comprimento_pilar_destravado=3000
+        )
+
+        with pytest.raises(NotImplementedError):
+            getattr(pilar, resistencia_flexao)

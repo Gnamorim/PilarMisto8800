@@ -522,14 +522,14 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                 # Mrd = Mpl - (Mpl-Merd) * termo1
 
                 # return Mrd
-                return ("Pilar não-compacto à flexão - Não implementado")
+                raise NotImplementedError
 
             case Secao.ESBELTO:
                 
                 # Mrd = ?
 
                 # return Mrd
-                return ("Pilar esbelto à flexão - Não implementado")
+                raise NotImplementedError
 
             case _:
                 raise ValueError("Seção não suportada")
@@ -560,14 +560,14 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                 # Mrd = Mpl - (Mpl-Merd) * termo1
 
                 # return Mrd
-                return ("Pilar não-compacto à flexão - Não implementado")
+                raise NotImplementedError
 
             case Secao.ESBELTO:
                 
                 # Mrd = ?
 
                 # return Mrd
-                return ("Pilar esbelto à flexão - Não implementado")
+                raise NotImplementedError
 
             case _:
                 raise ValueError("Seção não suportada")
@@ -599,14 +599,14 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                 # Mrd = Mpl - (Mpl-Merd) * termo1
 
                 # return Mrd
-                return ("Pilar não-compacto à flexão - Não implementado")
+                raise NotImplementedError
 
             case Secao.ESBELTO:
                 
                 # Mrd = ?
 
                 # return Mrd
-                return ("Pilar esbelto à flexão - Não implementado")
+                raise NotImplementedError
 
             case _:
                 raise ValueError("Seção não suportada")
@@ -637,14 +637,14 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
                 # Mrd = Mpl - (Mpl-Merd) * termo1
 
                 # return Mrd
-                return ("Pilar não-compacto à flexão - Não implementado")
+                raise NotImplementedError
 
             case Secao.ESBELTO:
                 
                 # Mrd = ?
 
                 # return Mrd
-                return ("Pilar esbelto à flexão - Não implementado")
+                raise NotImplementedError
 
             case _:
                 raise ValueError("Seção não suportada")
