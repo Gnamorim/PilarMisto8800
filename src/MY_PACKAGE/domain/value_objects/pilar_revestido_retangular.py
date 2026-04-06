@@ -160,6 +160,102 @@ class PilarRevestido(ObjetoPilarMisto):
     def area_concreto(self):
         return (( self.altura_concreto * self.largura_concreto ) - self.area_armadura - self.area_aco)
     
+    # Esbeltez do perfil
+
+    @property
+    def esbeltez_perfil(self):
+        raise NotImplementedError
+
+    @property
+    def esbeltez_compressao(self):
+        raise NotImplementedError
+
+    @property
+    def esbeltez_flexao(self):
+        raise NotImplementedError
+
+    # Momentos de inercia
+
+    @property
+    def momento_inercia_aco_x(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_armadura_x(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_concreto_x(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_aco_y(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_armadura_y(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_concreto_y(self):
+        raise NotImplementedError
+
+    # Modulo resistente plastico
+
+    # eixo xx
+
+    @property
+    def modulo_resistente_plastico_aco_x(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_armadura_x(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_concreto_x(self):
+        raise NotImplementedError
+
+    # eixo yy
+
+    @property
+    def modulo_resistente_plastico_aco_y(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_armadura_y(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_concreto_y(self):
+        raise NotImplementedError
+
+    # propriedades da linha neutra plastica
+
+    @property
+    def modulo_resistente_plastico_armadura_x_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_armadura_y_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_concreto_x_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_concreto_y_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_aco_x_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_aco_y_lnp(self):
+        raise NotImplementedError
+    
 
 
     # --- Capacidades axiais ---
@@ -177,4 +273,12 @@ class PilarRevestido(ObjetoPilarMisto):
             return self.area_armadura * self.material_armadura.resistencia_design
         else:
             return 0.0
+
+    @property
+    def capacidade_axial_resistente_secao_nominal(self):
+        raise NotImplementedError
+
+    @property
+    def capacidade_axial_resistente_secao_design(self):
+        raise NotImplementedError
         

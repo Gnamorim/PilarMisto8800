@@ -152,8 +152,11 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     def area_concreto(self):
         return ((( self.largura_tubo - 2 * self.espessura_tubo )*( self.altura_tubo - 2*self.espessura_tubo)) - self.area_armadura)
     
-
     # Esbeltez do perfil
+
+    @property
+    def esbeltez_perfil(self):
+        raise NotImplementedError
 
     @property
     def esbeltez_perfil_compressão(self):
@@ -264,6 +267,92 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
         
         return [a,b]
 
+    @property
+    def esbeltez_flexao(self):
+        raise NotImplementedError
+
+    # Momentos de inercia
+
+    @property
+    def momento_inercia_aco_x(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_armadura_x(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_concreto_x(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_aco_y(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_armadura_y(self):
+        raise NotImplementedError
+
+    @property
+    def momento_inercia_concreto_y(self):
+        raise NotImplementedError
+
+    # Modulo resistente plastico
+
+    # eixo xx
+
+    @property
+    def modulo_resistente_plastico_aco_x(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_armadura_x(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_concreto_x(self):
+        raise NotImplementedError
+
+    # eixo yy
+
+    @property
+    def modulo_resistente_plastico_aco_y(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_armadura_y(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_concreto_y(self):
+        raise NotImplementedError
+
+    # propriedades da linha neutra plastica
+
+    @property
+    def modulo_resistente_plastico_armadura_x_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_armadura_y_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_concreto_x_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_concreto_y_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_aco_x_lnp(self):
+        raise NotImplementedError
+
+    @property
+    def modulo_resistente_plastico_aco_y_lnp(self):
+        raise NotImplementedError
+
 
 
     # --- Capacidades axiais ---
@@ -281,3 +370,11 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
             return self.area_armadura * self.fcd1 * (self.material_armadura.modulo_elasticidade/self.material_concreto.modulo_elasticidade_inicial)
         else:
             return 0.0
+
+    @property
+    def capacidade_axial_resistente_secao_nominal(self):
+        raise NotImplementedError
+
+    @property
+    def capacidade_axial_resistente_secao_design(self):
+        raise NotImplementedError
