@@ -41,7 +41,7 @@ class MetodoII(MetodoBase):
         mcc_x = self._calcular_momento_adicional_x(objeto_pilar_misto,carregamento)
         mcc_y = self._calcular_momento_adicional_y(objeto_pilar_misto,carregamento)
 
-        for caso in carregamento:
+        for indice, caso in enumerate(carregamento):
             if design:
                 n = objeto_pilar_misto.capacidade_axial_resistente_pilar_design
                 npl = objeto_pilar_misto.capacidade_axial_plastico_design()
@@ -61,8 +61,8 @@ class MetodoII(MetodoBase):
 
             # cria as variaveis a serem usadas 
             ns = caso[0]
-            ms_x = caso[1] + mcc_x
-            ms_y = caso[2] + mcc_y
+            ms_x = caso[1] + mcc_x[indice]
+            ms_y = caso[2] + mcc_y[indice]
             mx_max_red = 0.8 * mx_max
             my_max_red = 0.8 * my_max
 

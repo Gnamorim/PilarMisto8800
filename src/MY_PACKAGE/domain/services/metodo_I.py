@@ -29,7 +29,7 @@ class MetodoI(MetodoBase):
         mcc_x = self._calcular_momento_adicional_x(objeto_pilar_misto,carregamento)
         mcc_y = self._calcular_momento_adicional_y(objeto_pilar_misto,carregamento)
 
-        for caso in carregamento:
+        for indice, caso in enumerate(carregamento):
             if design:
                 verificador = caso[0] / objeto_pilar_misto.capacidade_axial_resistente_pilar_design
                 mx = objeto_pilar_misto.momento_resistente_plastico_total_design_xx
@@ -39,8 +39,8 @@ class MetodoI(MetodoBase):
                 mx = objeto_pilar_misto.momento_resistente_plastico_total_xx
                 my = objeto_pilar_misto.momento_resistente_plastico_total_yy 
             
-            msx = mcc_x + caso[1]
-            msy = mcc_y + caso[2]
+            msx = mcc_x[indice] + caso[1]
+            msy = mcc_y[indice] + caso[2]
             
             if verificador >= 0.2:
                 result = verificador + (8 / 9) * ((msx / mx) + (msy / my))
