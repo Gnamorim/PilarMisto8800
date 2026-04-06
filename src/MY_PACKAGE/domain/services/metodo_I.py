@@ -1,5 +1,4 @@
-from typing import Sequence
-import matplotlib.pyplot as plt
+from typing import Sequence, Tuple
 
 from MY_PACKAGE.domain.value_objects.ObjetoPilarMisto import ObjetoPilarMisto
 from MY_PACKAGE.domain.services._flexo_compressao import MetodoBase
@@ -15,7 +14,7 @@ class MetodoI(MetodoBase):
     def comparar_solicitacao(
         self,
         objeto_pilar_misto: ObjetoPilarMisto,
-        carregamento: Sequence[float,float,float],
+        carregamento: Sequence[Tuple[float, float, float]],
         design: bool = True
     ) -> list[bool]:
         

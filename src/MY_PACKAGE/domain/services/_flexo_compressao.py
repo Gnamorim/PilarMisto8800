@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Sequence
+from typing import Sequence, Tuple
 from math import e
 
 from MY_PACKAGE.domain.value_objects.ObjetoPilarMisto import ObjetoPilarMisto
@@ -12,7 +12,7 @@ class MetodoBase(ABC):
     Considera [[Nsd; Msd,x; Msd,y]]
     """
 
-    def _validar_carregamento(self, dados: Sequence[float,float,float]):
+    def _validar_carregamento(self, dados: Sequence[Tuple[float, float, float]]):
         for i, grupo in enumerate(dados):
             if len(grupo) != 3:
                 raise ValueError(f"Grupo {i} não tem 3 valores: {grupo}")
@@ -21,7 +21,7 @@ class MetodoBase(ABC):
     def _calcular_momento_adicional_x(
         self,
         objeto_pilar_misto: ObjetoPilarMisto,
-        carregamento: Sequence[float,float,float]
+        carregamento: Sequence[Tuple[float, float, float]]
     ):
         self._validar_carregamento(carregamento)
 
@@ -51,7 +51,7 @@ class MetodoBase(ABC):
     def _calcular_momento_adicional_y(
         self,
         objeto_pilar_misto: ObjetoPilarMisto,
-        carregamento: Sequence[float,float,float]
+        carregamento: Sequence[Tuple[float, float, float]]
     ):
         self._validar_carregamento(carregamento)
 
