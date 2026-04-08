@@ -78,19 +78,22 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
             if not isinstance(val, (int, float)) or isinstance(val, bool):
                 raise TypeError(f"{attr} deve ser numérico")
 
-       
-        # if self.diametro_tubo <= 0:
-        #     raise ValueError("diametro_tubo deve ser positivo")
+        if self.numero_armadura_longitudinal % 2 != 0:
+            raise ValueError("numero_armadura_longitudinal deve ser 0 ou par")
+        
+        if self.numero_armadura_longitudinal == 2:
+            raise ValueError("numero_armadura_longitudinal deve ser 0 ou pelo menos 4")
 
-        # if self.espessura_tubo <= 0:
-        #     raise ValueError("espessura_tubo deve ser positiva")
+        if self.altura_tubo <= 0:
+            raise ValueError("altura_tubo deve ser positivo")
 
-        # if self.diametro_interno <= 0:
-        #     raise ValueError("diametro_interno inválido (espessura muito grande)")
+        if self.largura_tubo <= 0:
+            raise ValueError("largura_tubo deve ser positivo")
 
-        # if self.espessura_tubo >= self.diametro_tubo / 2:
-        #     raise ValueError("espessura_tubo fisicamente inválida")
+        if self.espessura_tubo <= 0:
+            raise ValueError("espessura_tubo deve ser positiva")
 
+        
 
     def _limite_escopo(self):
         super()._limite_escopo()
@@ -161,7 +164,7 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
     @property
     def esbeltez_perfil_compressão(self):
        
-       largura = min(self.largura_tubo, self.altura_tubo)
+       largura = max(self.largura_tubo, self.altura_tubo)
        
        return largura / self.espessura_tubo
     
@@ -269,33 +272,150 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
 
     @property
     def esbeltez_flexao(self):
-        raise NotImplementedError
+        if (self.esbeltez_flexao_XX == Secao.COMPACTO and
+            self.esbeltez_flexao_YY == Secao.COMPACTO):
+            return Secao.COMPACTO
+
+        elif (self.esbeltez_flexao_XX == Secao.ESBELTO or
+            self.esbeltez_flexao_YY == Secao.ESBELTO):
+            return Secao.ESBELTO
+
+        else:
+            return Secao.NAO_COMPACTO
 
     # Momentos de inercia
 
+    def _distribuicao_armaduras(self):
+        d = self.cobrimento + self.diametro_armadura_transversal + (self.diametro_armadura_longitudinal / 2)
+
+        x_max = (self.largura_tubo - (self.espessura_tubo * 2)) / 2 - d
+        y_max = (self.altura_tubo - (self.espessura_tubo * 2)) / 2 - d
+
+        if self.numero_armadura_longitudinal == 0:
+            return []
+
+        coords = [
+        (-x_max, -y_max),
+        ( x_max, -y_max),
+        ( x_max,  y_max),
+        (-x_max,  y_max),
+        ]
+        
+        restantes = self.numero_armadura_longitudinal - 4
+        if restantes == 0:
+            return coords
+
+         # distribui o restante entre faces horizontais e verticais
+        # tentando privilegiar o maior lado
+        if self.largura_tubo >= self.altura_tubo:
+            n_horiz = restantes // 2 + restantes % 4
+            n_vert = restantes - n_horiz
+        else:
+            n_vert = restantes // 2 + restantes % 4
+            n_horiz = restantes - n_vert
+
+        # garante número par em cada par de faces
+        if n_horiz % 2 != 0:
+            n_horiz -= 1
+            n_vert += 1
+
+        if n_vert % 2 != 0:
+            n_vert -= 1
+            n_horiz += 1
+
+        # topo e base
+        barras_por_face_h = n_horiz // 2
+        if barras_por_face_h > 0:
+            for i in range(1, barras_por_face_h + 1):
+                x = -x_max + i * (2 * x_max) / (barras_por_face_h + 1)
+                coords.append((x,  y_max))
+                coords.append((x, -y_max))
+
+        # esquerda e direita
+        barras_por_face_v = n_vert // 2
+        if barras_por_face_v > 0:
+            for i in range(1, barras_por_face_v + 1):
+                y = -y_max + i * (2 * y_max) / (barras_por_face_v + 1)
+                coords.append(( x_max, y))
+                coords.append((-x_max, y))
+
+        return coords    
+    
     @property
     def momento_inercia_aco_x(self):
-        raise NotImplementedError
+        result = (
+            (self.largura_tubo * (self.altura_tubo ** 3) / 12)
+            - ((self.largura_tubo - 2 * self.espessura_tubo ) 
+               * ((self.altura_tubo - 2*self.espessura_tubo) ** 3) / 12)
+        )
+        return result
 
     @property
     def momento_inercia_armadura_x(self):
-        raise NotImplementedError
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+        
+        iz = np.pi * ( self.diametro_armadura_longitudinal ** 4 ) / 64
+        iz_tot = 0.0
+
+        area = ( np.pi * ( self.diametro_armadura_longitudinal ** 2 ) / 4)
+
+        lista_posicao = self._distribuicao_armaduras()
+
+        for posicao in lista_posicao:
+
+            a = area * (posicao[1] ** 2)
+
+            iz_tot = iz_tot + iz + a
+
+        return iz_tot
+        
+    
 
     @property
     def momento_inercia_concreto_x(self):
-        raise NotImplementedError
+        result = (
+             (self.largura_tubo - 2 * self.espessura_tubo ) 
+               * ((self.altura_tubo - 2*self.espessura_tubo) ** 3) / 12
+        )
+        return result - self.momento_inercia_armadura_x
 
     @property
     def momento_inercia_aco_y(self):
-        raise NotImplementedError
+        result = (
+            (self.altura_tubo * (self.largura_tubo ** 3) / 12)
+            - ((self.altura_tubo - 2 * self.espessura_tubo ) 
+               * ((self.largura_tubo - 2*self.espessura_tubo) ** 3) / 12)
+        )
+        return result
 
     @property
     def momento_inercia_armadura_y(self):
-        raise NotImplementedError
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+        
+        iz = np.pi * ( self.diametro_armadura_longitudinal ** 4 ) / 64
+        iz_tot = 0.0
+
+        area = ( np.pi * ( self.diametro_armadura_longitudinal ** 2 ) / 4)
+
+        lista_posicao = self._distribuicao_armaduras()
+
+        for posicao in lista_posicao:
+
+            a = area * (posicao[0] ** 2)
+            
+            iz_tot = iz_tot + iz + a
+
+        return iz_tot
 
     @property
     def momento_inercia_concreto_y(self):
-        raise NotImplementedError
+        result = (
+             ((self.largura_tubo - 2 * self.espessura_tubo ) ** 3)
+               * (self.altura_tubo - 2*self.espessura_tubo) / 12
+        )
+        return result - self.momento_inercia_armadura_y
 
     # Modulo resistente plastico
 

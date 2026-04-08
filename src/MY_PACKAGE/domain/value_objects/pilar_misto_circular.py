@@ -99,6 +99,9 @@ class PilarCircularPreenchido(ObjetoPilarMisto):
 
         if self.espessura_tubo >= self.diametro_tubo / 2:
             raise ValueError("espessura_tubo fisicamente inválida")
+        
+        if self.numero_armadura_longitudinal%2 != 0:
+            raise ValueError("numero_armadura_longitudinal deve ser 0 ou par")
 
 
     def _limite_escopo(self):
