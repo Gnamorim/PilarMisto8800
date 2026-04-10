@@ -835,7 +835,27 @@ class ObjetoPilarMisto(ABC):
         return (self.momento_resistente_maximo_plastico_aco_design_yy + self.momento_resistente_maximo_plastico_concreto_design_yy + self.momento_resistente_maximo_plastico_armadura_design_yy)
 
 
+    @property
+    @abstractmethod
+    def capacidade_flexao_resistente_secao_nominal_xx(self):
+        pass
 
+    @property
+    @abstractmethod
+    def capacidade_flexao_resistente_secao_nominal_yy(self):
+        pass
+
+    @property
+    @abstractmethod
+    def capacidade_flexao_resistente_secao_design_xx(self):
+        pass
+
+    @property
+    @abstractmethod
+    def capacidade_flexao_resistente_secao_design_yy(self):
+        pass
+    
+            
 
 
     
