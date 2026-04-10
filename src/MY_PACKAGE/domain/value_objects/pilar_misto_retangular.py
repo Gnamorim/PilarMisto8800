@@ -112,15 +112,24 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
         if not ( 0.2 <= razao <= 5.0 ):
             raise ValueError("a razão entre largura_tubo e altura_tubo deve estar entre 0.2 e 5")
 
-        # Junta todos os resultados em uma lista única
         estados = [
             self.esbeltez_compressao,
-            *self.esbeltez_flexao_XX,
-            *self.esbeltez_flexao_YY,
+            self.esbeltez_flexao_XX,
+            self.esbeltez_flexao_YY,
         ]
 
         if Secao.FORA_ESCOPO in estados:
             raise ValueError("Esbeltez do tubo fora do limite normativo")
+
+    @staticmethod
+    def _pior_secao(*estados: Secao) -> Secao:
+        severidade = {
+            Secao.COMPACTO: 0,
+            Secao.NAO_COMPACTO: 1,
+            Secao.ESBELTO: 2,
+            Secao.FORA_ESCOPO: 3,
+        }
+        return max(estados, key=severidade.__getitem__)
 
 
     # -------------------------------------
@@ -251,7 +260,7 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
         else:
             b = Secao.FORA_ESCOPO
         
-        return [a,b]
+        return self._pior_secao(a, b)
         
     
     @property    
@@ -277,20 +286,11 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
         else:
             b = Secao.FORA_ESCOPO
         
-        return [a,b]
+        return self._pior_secao(a, b)
 
     @property
     def esbeltez_flexao(self):
-        if (self.esbeltez_flexao_XX == Secao.COMPACTO and
-            self.esbeltez_flexao_YY == Secao.COMPACTO):
-            return Secao.COMPACTO
-
-        elif (self.esbeltez_flexao_XX == Secao.ESBELTO or
-            self.esbeltez_flexao_YY == Secao.ESBELTO):
-            return Secao.ESBELTO
-
-        else:
-            return Secao.NAO_COMPACTO
+        return self._pior_secao(self.esbeltez_flexao_XX, self.esbeltez_flexao_YY)
 
     # Momentos de inercia
 
