@@ -56,6 +56,15 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
         self._validate()
 
         self._limite_escopo()
+
+        # estas informações só são necessárias para flexão, não devem ser um problema        
+        self.linha_neutra_plastica_xx, self.area_linha_neutra_plastica_xx = (
+            self._propriedades_linha_neutra_plastica_xx()
+        )
+
+        self.linha_neutra_plastica_yy, self.area_linha_neutra_plastica_yy = (
+            self._propriedades_linha_neutra_plastica_yy()
+        )
         
     # -----------------------------------------------
     #
@@ -159,10 +168,10 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
 
     @property
     def esbeltez_perfil(self):
-        raise NotImplementedError
+        return self.esbeltez_perfil_compressao
 
     @property
-    def esbeltez_perfil_compressão(self):
+    def esbeltez_perfil_compressao(self):
        
        largura = max(self.largura_tubo, self.altura_tubo)
        
@@ -423,55 +432,180 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
 
     @property
     def modulo_resistente_plastico_aco_x(self):
-        raise NotImplementedError
+        largura_interna = self.largura_tubo - 2 * self.espessura_tubo
+        altura_interna = self.altura_tubo - 2 * self.espessura_tubo
+
+        return (
+            self.largura_tubo * (self.altura_tubo ** 2) / 4
+            - largura_interna * (altura_interna ** 2) / 4
+        )
 
     @property
     def modulo_resistente_plastico_armadura_x(self):
-        raise NotImplementedError
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+        
+        area = (np.pi / 4) * (self.diametro_armadura_longitudinal ** 2)
+        return sum(area * abs(posicao[1]) for posicao in self._distribuicao_armaduras())
 
     @property
     def modulo_resistente_plastico_concreto_x(self):
-        raise NotImplementedError
+        largura_interna = self.largura_tubo - 2 * self.espessura_tubo
+        altura_interna = self.altura_tubo - 2 * self.espessura_tubo
+
+        return (
+            largura_interna * (altura_interna ** 2) / 4
+            - self.modulo_resistente_plastico_armadura_x
+        )
 
     # eixo yy
 
     @property
     def modulo_resistente_plastico_aco_y(self):
-        raise NotImplementedError
+        largura_interna = self.largura_tubo - 2 * self.espessura_tubo
+        altura_interna = self.altura_tubo - 2 * self.espessura_tubo
+
+        return (
+            self.altura_tubo * (self.largura_tubo ** 2) / 4
+            - altura_interna * (largura_interna ** 2) / 4
+        )
 
     @property
     def modulo_resistente_plastico_armadura_y(self):
-        raise NotImplementedError
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+        
+        area = (np.pi / 4) * (self.diametro_armadura_longitudinal ** 2)
+        return sum(area * abs(posicao[0]) for posicao in self._distribuicao_armaduras())
+
 
     @property
     def modulo_resistente_plastico_concreto_y(self):
-        raise NotImplementedError
+        largura_interna = self.largura_tubo - 2 * self.espessura_tubo
+        altura_interna = self.altura_tubo - 2 * self.espessura_tubo
+
+        return (
+            altura_interna * (largura_interna ** 2) / 4
+            - self.modulo_resistente_plastico_armadura_y
+        )
 
     # propriedades da linha neutra plastica
 
+    def _propriedades_linha_neutra_plastica_xx(self):
+        Asn = 0
+
+        if self.numero_armadura_longitudinal == 0:
+
+            hn =(
+                (self.area_concreto * self.fcd1)
+                / (2 * self.largura_tubo * self.fcd1 + 4 * self.espessura_tubo 
+                   * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1))
+                )
+
+            return hn, Asn
+
+        for i in range(5):
+
+            hn =(
+                (self.area_concreto * self.fcd1 - Asn * (2 * self.material_armadura.resistencia_design - self.fcd1)) 
+                / (2 * self.largura_tubo * self.fcd1 + 4 * self.espessura_tubo 
+                   * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1))
+                )
+
+            Asn1 = sum(
+                (np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) 
+                for posicao in self._distribuicao_armaduras() if abs(posicao[1]) <= hn
+                )
+
+            if abs(Asn1 - Asn) < 0.1:
+                return hn, Asn1
+
+            Asn = Asn1
+        return hn, Asn
+    
+    def _propriedades_linha_neutra_plastica_yy(self):
+        Asn = 0
+        
+        if self.numero_armadura_longitudinal == 0:
+
+            hn =(
+                (self.area_concreto * self.fcd1)
+                / (2 * self.altura_tubo * self.fcd1 + 4 * self.espessura_tubo 
+                   * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1))
+                )
+
+            return hn, Asn
+
+        for i in range(5):
+
+            hn =(
+                (self.area_concreto * self.fcd1 - Asn * (2 * self.material_armadura.resistencia_design - self.fcd1)) 
+                / (2 * self.altura_tubo * self.fcd1 + 4 * self.espessura_tubo 
+                   * (2 * self.material_aco_estrutural.resistencia_design - self.fcd1))
+                )
+
+            Asn1 = sum(
+                (np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) 
+                for posicao in self._distribuicao_armaduras() if abs(posicao[0]) <= hn
+                )
+
+            if abs(Asn1 - Asn) < 0.1:
+                return hn, Asn1
+
+            Asn = Asn1
+        return hn, Asn
+    
     @property
     def modulo_resistente_plastico_armadura_x_lnp(self):
-        raise NotImplementedError
+        if self.numero_armadura_longitudinal == 0:
+            return 0
 
-    @property
+        return sum(
+            (np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) * abs(posicao[1])
+            for posicao in self._distribuicao_armaduras() if abs(posicao[1]) <= self.linha_neutra_plastica_xx
+            )
+
+    @property   
     def modulo_resistente_plastico_armadura_y_lnp(self):
-        raise NotImplementedError
+        if self.numero_armadura_longitudinal == 0:
+            return 0
+
+        return sum(
+            (np.pi / 4) * (self.diametro_armadura_longitudinal ** 2) * abs(posicao[0])
+            for posicao in self._distribuicao_armaduras() if abs(posicao[0]) <= self.linha_neutra_plastica_xx
+            )
 
     @property
     def modulo_resistente_plastico_concreto_x_lnp(self):
-        raise NotImplementedError
+        return (
+            (self.largura_tubo - 2 * self.espessura_tubo) 
+            * (self.linha_neutra_plastica_xx ** 2) 
+            - self.modulo_resistente_plastico_armadura_x_lnp
+            )
 
     @property
     def modulo_resistente_plastico_concreto_y_lnp(self):
-        raise NotImplementedError
+        return (
+            (self.altura_tubo - 2 * self.espessura_tubo) 
+            * (self.linha_neutra_plastica_yy ** 2) 
+            - self.modulo_resistente_plastico_armadura_y_lnp
+            )
 
     @property
     def modulo_resistente_plastico_aco_x_lnp(self):
-        raise NotImplementedError
+        return (
+            self.largura_tubo * (self.linha_neutra_plastica_xx ** 2) 
+            - self.modulo_resistente_plastico_armadura_x_lnp 
+            - self.modulo_resistente_plastico_concreto_x_lnp
+            )
 
     @property
     def modulo_resistente_plastico_aco_y_lnp(self):
-        raise NotImplementedError
+        return (
+            self.altura_tubo * (self.linha_neutra_plastica_yy ** 2) 
+            - self.modulo_resistente_plastico_armadura_y_lnp 
+            - self.modulo_resistente_plastico_concreto_y_lnp
+            )
 
 
 
@@ -493,8 +627,233 @@ class PilarRetangularPreenchido(ObjetoPilarMisto):
 
     @property
     def capacidade_axial_resistente_secao_nominal(self):
-        raise NotImplementedError
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        
+        match self.esbeltez_compressao:
+            case Secao.COMPACTO:
+                return self.capacidade_axial_plastico()
+
+            case Secao.NAO_COMPACTO:
+
+                Nyrd = ((self.material_aco_estrutural.fy * self.area_aco) 
+                + 0.7 * self.material_concreto.fck * (self.area_concreto + self.area_armadura 
+                * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
+
+                termo1 = self.capacidade_axial_plastico() - Nyrd
+
+                termo2 = (( self.esbeltez_perfil - self.esbeltez_perfil_limite_compressao ) 
+                          / ( self.esbeltez_perfil_residual_compressao - self.esbeltez_perfil_limite_compressao ) ** 2)
+
+                return (self.capacidade_axial_plastico() - (termo1)*(termo2))
+
+            case Secao.ESBELTO:
+                
+                sigma_cr = (
+                    (9 * self.material_concreto.modulo_elasticidade_secante)
+                    / ((self.esbeltez_perfil ** 2) * 1)
+                )
+
+                return ((sigma_cr * self.area_aco) 
+                        + 0.7 * self.material_concreto.fck 
+                        * (self.area_concreto + self.area_armadura 
+                            * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
+
+            case _:
+                raise ValueError("Seção não suportada")
 
     @property
     def capacidade_axial_resistente_secao_design(self):
-        raise NotImplementedError
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular para design
+        """
+
+        
+        match self.esbeltez_compressao:
+            case Secao.COMPACTO:
+                return self.capacidade_axial_plastico()
+
+            case Secao.NAO_COMPACTO:
+
+                Nyrd = ((self.material_aco_estrutural.fy * self.area_aco) 
+                + 0.7 * self.material_concreto.fck * (self.area_concreto + self.area_armadura 
+                * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
+
+                termo1 = self.capacidade_axial_plastico() - Nyrd
+
+                termo2 = (( self.esbeltez_perfil - self.esbeltez_perfil_limite_compressao ) 
+                          / ( self.esbeltez_perfil_residual_compressao - self.esbeltez_perfil_limite_compressao ) ** 2)
+
+                return (self.capacidade_axial_plastico() - (termo1)*(termo2))
+
+            case Secao.ESBELTO:
+                
+                sigma_cr = (
+                    (9 * self.material_concreto.modulo_elasticidade_secante)
+                    / ((self.esbeltez_perfil ** 2) * 1.1)
+                )
+
+                return ((sigma_cr * self.area_aco) 
+                        + 0.7 * self.material_concreto.fck 
+                        * (self.area_concreto + self.area_armadura 
+                            * (self.material_armadura.modulo_elasticidade / self.material_concreto.modulo_elasticidade_inicial)))
+
+            case _:
+                raise ValueError("Seção não suportada")
+    
+    # --- Capacidades de flexão --- 
+
+    @property
+    def capacidade_flexao_resistente_secao_nominal_xx(self):        
+
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        Mpl = self.momento_resistente_plastico_total_xx
+        
+        match self.esbeltez_flexao_XX:
+            case Secao.COMPACTO:
+
+                Mrd = Mpl
+
+                return Mrd
+
+            case Secao.NAO_COMPACTO:
+
+                # Merd = 1
+
+                # termo1 = ((self.esbeltez_flexao - self.esbeltez_perfil_limite_flexao)
+                #           / (self.esbeltez_perfil_residual_flexao-self.esbeltez_perfil_limite_flexao))
+
+                # Mrd = Mpl - (Mpl-Merd) * termo1
+
+                # return Mrd
+                raise NotImplementedError
+
+            case Secao.ESBELTO:
+                
+                # Mrd = ?
+
+                # return Mrd
+                raise NotImplementedError
+
+            case _:
+                raise ValueError("Seção não suportada")
+
+    @property
+    def capacidade_flexao_resistente_secao_nominal_yy(self):        
+
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        Mpl = self.momento_resistente_plastico_total_yy
+        
+        match self.esbeltez_flexao_YY:
+            case Secao.COMPACTO:
+
+                Mrd = Mpl
+
+                return Mrd
+
+            case Secao.NAO_COMPACTO:
+
+                # Merd = 1
+
+                # termo1 = ((self.esbeltez_flexao - self.esbeltez_perfil_limite_flexao)
+                #           / (self.esbeltez_perfil_residual_flexao-self.esbeltez_perfil_limite_flexao))
+
+                # Mrd = Mpl - (Mpl-Merd) * termo1
+
+                # return Mrd
+                raise NotImplementedError
+
+            case Secao.ESBELTO:
+                
+                # Mrd = ?
+
+                # return Mrd
+                raise NotImplementedError
+
+            case _:
+                raise ValueError("Seção não suportada")
+
+
+    @property
+    def capacidade_flexao_resistente_secao_design_xx(self):        
+
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        Mpl = self.momento_resistente_plastico_total_design_xx
+        
+        match self.esbeltez_flexao_XX:
+            case Secao.COMPACTO:
+
+                Mrd = Mpl
+
+                return Mrd
+
+            case Secao.NAO_COMPACTO:
+
+                # Merd = 1
+
+                # termo1 = ((self.esbeltez_flexao - self.esbeltez_perfil_limite_flexao)
+                #           / (self.esbeltez_perfil_residual_flexao-self.esbeltez_perfil_limite_flexao))
+
+                # Mrd = Mpl - (Mpl-Merd) * termo1
+
+                # return Mrd
+                raise NotImplementedError
+
+            case Secao.ESBELTO:
+                
+                # Mrd = ?
+
+                # return Mrd
+                raise NotImplementedError
+
+            case _:
+                raise ValueError("Seção não suportada")
+
+    @property
+    def capacidade_flexao_resistente_secao_design_yy(self):        
+
+        """
+        Considera o efeito da esbeltez local no comportamento axial do pilar circular
+        """
+
+        Mpl = self.momento_resistente_plastico_total_design_yy
+        
+        match self.esbeltez_flexao_YY:
+            case Secao.COMPACTO:
+
+                Mrd = Mpl
+
+                return Mrd
+
+            case Secao.NAO_COMPACTO:
+
+                # Merd = 1
+
+                # termo1 = ((self.esbeltez_flexao - self.esbeltez_perfil_limite_flexao)
+                #           / (self.esbeltez_perfil_residual_flexao-self.esbeltez_perfil_limite_flexao))
+
+                # Mrd = Mpl - (Mpl-Merd) * termo1
+
+                # return Mrd
+                raise NotImplementedError
+
+            case Secao.ESBELTO:
+                
+                # Mrd = ?
+
+                # return Mrd
+                raise NotImplementedError
+
+            case _:
+                raise ValueError("Seção não suportada")
